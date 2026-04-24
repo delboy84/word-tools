@@ -20,7 +20,8 @@ const ASSETS = [
 
 const CDN_ASSETS = [
   'https://cdn.tailwindcss.com/',
-  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js'
+  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
+  'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
 ];
 
 // Install: cache local assets
