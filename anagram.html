@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline, no ads.">
+  <meta name="keywords" content="word puzzle, word game, solver, helper, free, offline">
+  <meta property="og:title" content="Anagram Solver — Word Puzzle Utilities">
+  <meta property="og:description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Anagram Solver — Word Puzzle Utilities">
+  <meta name="twitter:description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline, no ads.">
+  <title>Anagram Solver — Word Puzzle Utilities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200"
+      x-data="anagram()" x-init="init()">
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🔄 Anagram Solver</h1>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition">
+        <span x-show="darkMode" class="text-lg">☀️</span>
+        <span x-show="!darkMode" class="text-lg">🌙</span>
+      </button>
+    </div>
+
+    <!-- Letter input -->
+    <div class="mb-3">
+      <input type="text" x-model="letters" @input="onInput()" placeholder="Enter letters (e.g. LISTEN)"
+             x-ref="letterInput"
+             class="w-full px-4 py-3 text-xl font-mono border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-cyan-500 focus:outline-none transition uppercase"
+             maxlength="15" autocomplete="off" spellcheck="false">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Use <kbd class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">?</kbd> for blank tiles</p>
+    </div>
+
+    <!-- Must include -->
+    <div class="mb-4">
+      <input type="text" x-model="mustInclude" @input="onInput()" placeholder="Must include (optional)"
+             class="w-full px-4 py-2 text-base font-mono border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-cyan-500 focus:outline-none transition uppercase"
+             maxlength="10" autocomplete="off" spellcheck="false">
+    </div>
+
+    <!-- Length filter -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button @click="setFilter(null)" :class="lengthFilter === null ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-sm font-medium transition">All</button>
+      <template x-for="len in availableLengths" :key="len">
+        <button @click="setFilter(len)" :class="lengthFilter === len ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-sm font-medium transition" x-text="len"></button>
+      </template>
+    </div>
+
+    <!-- Sort within groups -->
+    <div class="flex items-center gap-2 mb-3 text-sm" x-show="filteredResults.length > 0" x-cloak>
+      <span class="text-gray-500 dark:text-gray-400">Sort:</span>
+      <button @click="sortBy = 'score'; sortAndGroup()" :class="sortBy === 'score' ? 'bg-blue-100 dark:bg-cyan-900 text-blue-700 dark:text-cyan-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1 rounded-md font-medium transition">Score</button>
+      <button @click="sortBy = 'alpha'; sortAndGroup()" :class="sortBy === 'alpha' ? 'bg-blue-100 dark:bg-cyan-900 text-blue-700 dark:text-cyan-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1 rounded-md font-medium transition">A→Z</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 py-2 border-b border-gray-100 dark:border-gray-700 mb-4" x-show="searched" x-cloak>
+      <span><strong class="text-gray-900 dark:text-gray-100" x-text="totalWords"></strong> words</span>
+      <span>in <strong class="text-gray-900 dark:text-gray-100" x-text="searchTime"></strong>ms</span>
+    </div>
+
+    <!-- No results -->
+    <div class="text-center py-8 text-gray-400 dark:text-gray-500" x-show="searched && filteredResults.length === 0" x-cloak>
+      <p class="text-lg mb-1">No anagrams found</p>
+      <p class="text-sm">Try different letters</p>
+    </div>
+
+    <!-- Results grouped by length -->
+    <template x-for="group in displayGroups" :key="group.length">
+      <div class="mb-5">
+        <button @click="group.collapsed = !group.collapsed" class="flex items-center gap-2 w-full text-left mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500" x-text="group.length + '-letter (' + group.words.length + ')'"></span>
+          <span class="text-gray-400 dark:text-gray-500 text-xs" x-text="group.collapsed ? '▸' : '▾'"></span>
+        </button>
+        <ul x-show="!group.collapsed" class="flex flex-wrap gap-2">
+          <template x-for="w in group.words" :key="w.word">
+            <li @click="copyWord(w.word)" class="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-md font-mono text-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-cyan-900/30 hover:border-blue-200 dark:hover:border-cyan-700 transition group" :title="'Click to copy — Score: ' + w.score">
+              <span class="text-gray-900 dark:text-gray-100" x-text="w.word"></span>
+              <span class="text-xs text-gray-400 dark:text-gray-500 ml-1.5 group-hover:text-blue-500 dark:group-hover:text-cyan-400" x-text="w.score"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </template>
+
+    <!-- Copied toast -->
+    <div x-show="copied" x-transition x-cloak class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg">Copied!</div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
+      <a href="index.html" class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script src="js/wordlist.js"></script>
+  <script src="js/word-engine.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
+    function anagram() {
+      return {
+        darkMode: false,
+        letters: '',
+        mustInclude: '',
+        lengthFilter: null,
+        sortBy: 'score',
+        results: [],
+        filteredResults: [],
+        displayGroups: [],
+        availableLengths: [],
+        totalWords: 0,
+        searchTime: 0,
+        searched: false,
+        copied: false,
+        debounceTimer: null,
+        engine: null,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.engine = new WordEngine(window.WORDLIST);
+          this.$refs.letterInput.focus();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        onInput() {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = setTimeout(() => this.search(), 150);
+        },
+
+        search() {
+          const l = this.letters.replace(/[^A-Za-z?]/g, '').toUpperCase();
+          if (l.length < 2) {
+            this.results = [];
+            this.filteredResults = [];
+            this.displayGroups = [];
+            this.availableLengths = [];
+            this.searched = false;
+            return;
+          }
+          const t0 = performance.now();
+          const opts = { minLength: 2 };
+          const mi = this.mustInclude.replace(/[^A-Za-z]/g, '').toUpperCase();
+          if (mi) opts.mustInclude = mi;
+          this.results = this.engine.anagramSearch(l, opts);
+          const t1 = performance.now();
+          this.searchTime = Math.round(t1 - t0);
+          this.searched = true;
+
+          // Compute available lengths
+          this.availableLengths = this.results.map(g => g.length);
+          this.totalWords = this.results.reduce((sum, g) => sum + g.words.length, 0);
+          this.sortAndGroup();
+        },
+
+        setFilter(len) {
+          this.lengthFilter = len;
+          this.sortAndGroup();
+        },
+
+        sortAndGroup() {
+          // Filter
+          let groups = this.results;
+          if (this.lengthFilter !== null) {
+            groups = groups.filter(g => g.length === this.lengthFilter);
+          }
+
+          // Sort within each group
+          const sorted = groups.map(g => {
+            let words = [...g.words];
+            if (this.sortBy === 'alpha') {
+              words.sort((a, b) => a.word.localeCompare(b.word));
+            } else {
+              words.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word));
+            }
+            return { length: g.length, words, collapsed: false };
+          });
+
+          this.filteredResults = sorted.flatMap(g => g.words);
+          this.displayGroups = sorted;
+        },
+
+        copyWord(word) {
+          navigator.clipboard.writeText(word).then(() => {
+            this.copied = true;
+            setTimeout(() => this.copied = false, 1200);
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word Tools — Free Online Word Puzzle Solvers & Colour Picker</title>
+  <meta name="description" content="Free offline-capable word puzzle solvers and colour picker. Crossword solver, anagram finder, Wordle helper, Scrabble word finder, and colour palette generator. No ads, no tracking.">
+  <meta name="keywords" content="crossword solver, anagram solver, wordle helper, scrabble word finder, colour picker, palette generator, word puzzle, word tools">
+  <meta property="og:title" content="Word Tools — Free Online Word Puzzle Solvers & Colour Picker">
+  <meta property="og:description" content="Free offline-capable word puzzle solvers and colour picker. No ads, no tracking.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Word Tools — Free Online Puzzle Solvers & Colour Picker">
+  <meta name="twitter:description" content="Free offline-capable word puzzle solvers and colour palette generator. No ads, no tracking.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="landing()" x-init="init()">
+
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100">🛠️ Word Tools</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Free offline-capable puzzle solvers & utilities</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Word Tools Section -->
+    <h2 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Word Puzzles</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <template x-for="card in wordCards" :key="card.href">
+        <a :href="card.href" class="block p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition group">
+          <div class="text-3xl mb-3" x-text="card.icon"></div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" x-text="card.title"></h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="card.desc"></p>
+        </a>
+      </template>
+    </div>
+
+    <!-- Utilities Section -->
+    <h2 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Utilities</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+      <template x-for="card in utilCards" :key="card.href">
+        <a :href="card.href" class="block p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition group">
+          <div class="text-3xl mb-3" x-text="card.icon"></div>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" x-text="card.title"></h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="card.desc"></p>
+        </a>
+      </template>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-12">
+      Works offline · No tracking · No ads · Open source
+    </div>
+  </div>
+
+  <script>
+    function landing() {
+      return {
+        darkMode: false,
+        wordCards: [
+          { href: 'crossword.html', icon: '🔤', title: 'Crossword Solver', desc: 'Find words matching a pattern. Use ? for unknown letters.' },
+          { href: 'anagram.html', icon: '🔄', title: 'Anagram Solver', desc: 'Unscramble letters to find all valid words.' },
+          { href: 'wordle.html', icon: '🟩', title: 'Wordle Solver', desc: 'Get optimal guesses for your daily Wordle.' },
+          { href: 'scrabble.html', icon: '🀄', title: 'Scrabble Finder', desc: 'Find highest-scoring words from your rack.' }
+        ],
+        utilCards: [
+          { href: 'colour-picker.html', icon: '🎨', title: 'Colour Picker', desc: 'Generate harmonious colour palettes with contrast checking.' }
+        ],
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+        },
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        }
+      };
+    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+</body>
+</html>

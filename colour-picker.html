@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <meta name="keywords" content="colour picker, color picker, palette generator, WCAG contrast, complementary colours, triadic, analogous">
+  <meta property="og:title" content="Colour Picker Utility">
+  <meta property="og:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Colour Picker Utility">
+  <meta name="twitter:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <title>Colour Picker Utility</title>
+  <meta name="description" content="Colour picker with palette generation and WCAG contrast checking. Works offline.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3b82f6">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    /* Custom range slider styles */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 1.25rem;
+      border-radius: 0.5rem;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #374151;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #374151;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+    .dark input[type="range"]::-webkit-slider-thumb {
+      border-color: #9ca3af;
+    }
+    .dark input[type="range"]::-moz-range-thumb {
+      border-color: #9ca3af;
+    }
+    input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+    input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
+
+    /* Hue slider rainbow */
+    #hue-slider {
+      background: linear-gradient(to right,
+        hsl(0,100%,50%), hsl(30,100%,50%), hsl(60,100%,50%),
+        hsl(90,100%,50%), hsl(120,100%,50%), hsl(150,100%,50%),
+        hsl(180,100%,50%), hsl(210,100%,50%), hsl(240,100%,50%),
+        hsl(270,100%,50%), hsl(300,100%,50%), hsl(330,100%,50%),
+        hsl(360,100%,50%));
+    }
+
+    /* Toast animation */
+    .toast-enter { animation: toastIn 0.3s ease; }
+    .toast-leave { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(1rem); } }
+
+    /* Colour swatch transition */
+    .swatch-box { transition: background-color 0.15s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300"
+      x-data="colourPicker()" x-init="init()">
+
+  <!-- Toast Notification -->
+  <div x-show="showToast" x-transition:enter="toast-enter" x-transition:leave="toast-leave"
+       class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 px-5 py-3 rounded-lg shadow-xl text-sm font-medium"
+       x-text="toastMessage">
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+        🎨 Colour Picker
+      </h1>
+      <button @click="toggleDarkMode()"
+              class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+              :aria-label="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-text="darkMode ? '☀️' : '🌙'" class="text-xl"></span>
+      </button>
+    </div>
+
+    <!-- Slider Section + Preview -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 mb-6">
+
+      <!-- Sliders -->
+      <div class="space-y-4">
+        <!-- Hue -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Hue: <span x-text="hue">217</span>°</label>
+          <input type="range" id="hue-slider" min="0" max="360" step="1" x-model.number="hue"
+                 @input="updateFromSliders()" class="w-full">
+        </div>
+        <!-- Saturation -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Saturation: <span x-text="saturation">91</span>%</label>
+          <input type="range" min="0" max="100" step="1" x-model.number="saturation"
+                 @input="updateFromSliders()"
+                 :style="`background: linear-gradient(to right, hsl(${hue},0%,${lightness}%), hsl(${hue},100%,${lightness}%))`"
+                 class="w-full">
+        </div>
+        <!-- Lightness -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Lightness: <span x-text="lightness">60</span>%</label>
+          <input type="range" min="0" max="100" step="1" x-model.number="lightness"
+                 @input="updateFromSliders()"
+                 :style="`background: linear-gradient(to right, hsl(${hue},${saturation}%,0%), hsl(${hue},${saturation}%,50%), hsl(${hue},${saturation}%,100%))`"
+                 class="w-full">
+        </div>
+      </div>
+
+      <!-- Colour Preview -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-full h-36 rounded-xl shadow-inner swatch-box"
+             :style="`background-color: ${baseHex}`">
+          <div class="h-full flex items-end justify-center pb-2"
+               :style="`color: ${bestText}`">
+            <span class="text-lg font-mono font-bold drop-shadow" x-text="baseHex.toUpperCase()"></span>
+          </div>
+        </div>
+
+        <!-- HEX Input -->
+        <div class="flex gap-2 w-full">
+          <div class="flex-1 relative">
+            <input type="text" x-model="hexInput" @input="updateFromHex()"
+                   @keydown.enter="updateFromHex()"
+                   class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                   placeholder="#3B82F6"
+                   maxlength="7">
+            <div x-show="hexError" class="absolute -bottom-5 left-0 text-xs text-red-500" x-text="hexError"></div>
+          </div>
+          <label class="flex items-center cursor-pointer">
+            <input type="color" :value="baseHex" @input="updateFromNativePicker($event)"
+                   class="w-10 h-10 rounded cursor-pointer border-0 p-0">
+          </label>
+        </div>
+
+        <!-- Colour Values -->
+        <div class="w-full space-y-1 text-sm">
+          <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 rounded px-3 py-1.5">
+            <span class="text-gray-500 dark:text-gray-400">HEX</span>
+            <button @click="copyToClipboard(baseHex.toUpperCase())"
+                    class="font-mono hover:text-blue-500 transition" x-text="baseHex.toUpperCase()">#3B82F6</button>
+          </div>
+          <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 rounded px-3 py-1.5">
+            <span class="text-gray-500 dark:text-gray-400">RGB</span>
+            <button @click="copyToClipboard(`rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b})`)"
+                    class="font-mono hover:text-blue-500 transition"
+                    x-text="`rgb(${baseRgb.r}, ${baseRgb.g}, ${baseRgb.b})`"></button>
+          </div>
+          <div class="flex justify-between items-center bg-gray-100 dark:bg-gray-800 rounded px-3 py-1.5">
+            <span class="text-gray-500 dark:text-gray-400">HSL</span>
+            <button @click="copyToClipboard(`hsl(${hue}, ${saturation}%, ${lightness}%)`)"
+                    class="font-mono hover:text-blue-500 transition"
+                    x-text="`hsl(${hue}, ${saturation}%, ${lightness}%)`"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edge Case Warning -->
+    <div x-show="edgeWarning" x-transition
+         class="mb-4 p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-lg text-sm text-yellow-800 dark:text-yellow-200"
+         x-text="edgeWarning">
+    </div>
+
+    <!-- Palette Type Tabs -->
+    <div class="mb-4">
+      <div class="flex flex-wrap gap-2">
+        <template x-for="pt in paletteTypes" :key="pt.key">
+          <button @click="paletteType = pt.key"
+                  :class="paletteType === pt.key ? 'bg-blue-500 text-white shadow' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+                  class="px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                  x-text="pt.label">
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <!-- Palette Swatches -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-3">Generated Palette</h2>
+      <div class="grid gap-3" :class="paletteType === 'analogous' || paletteType === 'monochromatic' ? 'grid-cols-5' : (paletteType === 'tetradic' ? 'grid-cols-4' : 'grid-cols-3')">
+        <template x-for="(colour, idx) in currentPalette" :key="paletteType + '-' + idx">
+          <div class="cursor-pointer group" @click="copyToClipboard(hslToHex(colour.h, colour.s, colour.l).toUpperCase())">
+            <div class="swatch-box rounded-lg h-24 sm:h-28 shadow-md relative overflow-hidden"
+                 :style="`background-color: hsl(${colour.h}, ${colour.s}%, ${colour.l}%)`">
+              <div class="absolute bottom-1.5 left-2 right-2 text-xs font-mono font-bold text-center drop-shadow"
+                   :style="`color: ${bestTextColorForHSL(colour.h, colour.s, colour.l)}`"
+                   x-text="hslToHex(colour.h, colour.s, colour.l).toUpperCase()">
+              </div>
+            </div>
+            <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-center truncate"
+                 x-text="`hsl(${colour.h}, ${colour.s}%, ${colour.l}%)`"></div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Contrast Checker -->
+    <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+      <h2 class="text-lg font-semibold mb-4">Contrast Checker</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <!-- Foreground -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Foreground (Text)</label>
+          <div class="flex gap-2">
+            <input type="text" x-model="contrastFg"
+                   @input="validateContrastInput('fg')"
+                   class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                   placeholder="#FFFFFF" maxlength="7">
+            <input type="color" :value="contrastFg.startsWith('#') && contrastFg.length === 7 ? contrastFg : '#ffffff'"
+                   @input="contrastFg = $event.target.value.toUpperCase(); validateContrastInput('fg')"
+                   class="w-10 h-10 rounded cursor-pointer border-0 p-0">
+          </div>
+        </div>
+        <!-- Background -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Background</label>
+          <div class="flex gap-2">
+            <input type="text" x-model="contrastBg"
+                   @input="validateContrastInput('bg')"
+                   class="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                   placeholder="#3B82F6" maxlength="7">
+            <input type="color" :value="contrastBg.startsWith('#') && contrastBg.length === 7 ? contrastBg : '#3b82f6'"
+                   @input="contrastBg = $event.target.value.toUpperCase(); validateContrastInput('bg')"
+                   class="w-10 h-10 rounded cursor-pointer border-0 p-0">
+          </div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <!-- Preview -->
+        <div class="flex-shrink-0 rounded-lg px-5 py-3 text-lg font-semibold min-w-[160px] text-center"
+             :style="`background-color: ${contrastBg}; color: ${contrastFg}`">
+          <span x-text="contrastFg"></span> on <span x-text="contrastBg"></span>
+        </div>
+        <!-- Ratio + Badges -->
+        <div class="flex-1">
+          <div class="text-3xl font-bold mb-2" x-text="contrastResult.ratio + ':1'"></div>
+          <div class="flex flex-wrap gap-2">
+            <span :class="contrastResult.passesAA ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'"
+                  class="px-2 py-1 rounded text-xs font-semibold">
+              <span x-text="contrastResult.passesAA ? '✅' : '❌'"></span> AA Normal
+            </span>
+            <span :class="contrastResult.passesAAA ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'"
+                  class="px-2 py-1 rounded text-xs font-semibold">
+              <span x-text="contrastResult.passesAAA ? '✅' : '❌'"></span> AAA Normal
+            </span>
+            <span :class="contrastResult.passesAALarge ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'"
+                  class="px-2 py-1 rounded text-xs font-semibold">
+              <span x-text="contrastResult.passesAALarge ? '✅' : '❌'"></span> AA Large
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Suggested Text Colour -->
+      <div class="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm">
+        <span class="font-medium">Suggested text colour for current base:</span>
+        <span class="font-mono ml-1" x-text="bestText" :style="`color: ${bestText}`"></span>
+        <button @click="contrastFg = bestText; validateContrastInput('fg')"
+                class="ml-2 text-blue-500 hover:text-blue-600 text-xs underline">Use as FG</button>
+      </div>
+    </div>
+
+    <!-- Copy CSS Variables -->
+    <div class="flex flex-wrap gap-3 mb-8">
+      <button @click="copyCssVariables()"
+              class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition shadow">
+        📋 Copy CSS Variables
+      </button>
+      <button @click="copyPaletteJson()"
+              class="px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium text-sm transition shadow">
+        📋 Copy Palette JSON
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 pb-4">
+      Works offline · No tracking · Built with ♥
+    </div>
+  </div>
+
+  <!-- Load colour engine -->
+  <script src="js/colour-engine.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
+
+  <!-- Alpine.js App -->
+  <script>
+    function colourPicker() {
+      return {
+        // State
+        hue: 217,
+        saturation: 91,
+        lightness: 60,
+        hexInput: '#3B82F6',
+        hexError: '',
+        paletteType: 'complementary',
+        contrastFg: '#FFFFFF',
+        contrastBg: '#3B82F6',
+        darkMode: false,
+        showToast: false,
+        toastMessage: '',
+        edgeWarning: '',
+
+        paletteTypes: [
+          { key: 'complementary', label: 'Complementary' },
+          { key: 'splitComplementary', label: 'Split-Comp' },
+          { key: 'triadic', label: 'Triadic' },
+          { key: 'tetradic', label: 'Tetradic' },
+          { key: 'analogous', label: 'Analogous' },
+          { key: 'monochromatic', label: 'Monochromatic' }
+        ],
+
+        // Computed
+        get baseHex() {
+          return hslToHex(this.hue, this.saturation, this.lightness);
+        },
+        get baseRgb() {
+          return hslToRgb(this.hue, this.saturation, this.lightness);
+        },
+        get bestText() {
+          return bestTextColor(this.baseHex);
+        },
+        get currentPalette() {
+          return generatePalettes(this.hue, this.saturation, this.lightness)[this.paletteType];
+        },
+        get contrastResult() {
+          try {
+            return meetsWCAG(this.contrastFg, this.contrastBg);
+          } catch (e) {
+            return { ratio: '—', passesAA: false, passesAAA: false, passesAALarge: false };
+          }
+        },
+
+        // Methods
+        init() {
+          // Detect dark mode
+          const saved = localStorage.getItem('colourPickerDarkMode');
+          if (saved !== null) {
+            this.darkMode = saved === 'true';
+          } else {
+            this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          this.applyDarkMode();
+        },
+
+        updateFromSliders() {
+          this.hexInput = hslToHex(this.hue, this.saturation, this.lightness).toUpperCase();
+          this.hexError = '';
+          this.contrastBg = hslToHex(this.hue, this.saturation, this.lightness).toUpperCase();
+          this.checkEdgeCases();
+        },
+
+        updateFromHex() {
+          let hex = this.hexInput.trim();
+          if (!hex.startsWith('#')) hex = '#' + hex;
+          const clean = hex.replace('#', '');
+          if (clean.length === 3) {
+            const expanded = clean[0]+clean[0]+clean[1]+clean[1]+clean[2]+clean[2];
+            hex = '#' + expanded;
+          }
+          if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+            const hsl = hexToHsl(hex);
+            this.hue = hsl.h;
+            this.saturation = hsl.s;
+            this.lightness = hsl.l;
+            this.hexInput = hex.toUpperCase();
+            this.hexError = '';
+            this.contrastBg = hex.toUpperCase();
+            this.checkEdgeCases();
+          } else if (clean.length === 6 && !/^[0-9A-Fa-f]{6}$/.test(clean)) {
+            this.hexError = 'Invalid hex colour';
+          }
+        },
+
+        updateFromNativePicker(event) {
+          this.hexInput = event.target.value.toUpperCase();
+          this.updateFromHex();
+        },
+
+        validateContrastInput(which) {
+          // Normalise hex input
+          let hex = which === 'fg' ? this.contrastFg : this.contrastBg;
+          if (!hex.startsWith('#')) {
+            hex = '#' + hex;
+            if (which === 'fg') this.contrastFg = hex;
+            else this.contrastBg = hex;
+          }
+        },
+
+        checkEdgeCases() {
+          const result = adjustForEdgeCases(this.hue, this.saturation, this.lightness);
+          this.edgeWarning = result.warning || result.note || '';
+        },
+
+        bestTextColorForHSL(h, s, l) {
+          const hex = hslToHex(h, s, l);
+          return bestTextColor(hex);
+        },
+
+        toggleDarkMode() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('colourPickerDarkMode', this.darkMode);
+          this.applyDarkMode();
+        },
+
+        applyDarkMode() {
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        copyToClipboard(value) {
+          navigator.clipboard.writeText(value).then(() => {
+            this.toastMessage = `Copied: ${value}`;
+            this.showToast = true;
+            setTimeout(() => { this.showToast = false; }, 2000);
+          }).catch(() => {
+            // Fallback
+            const ta = document.createElement('textarea');
+            ta.value = value;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            this.toastMessage = `Copied: ${value}`;
+            this.showToast = true;
+            setTimeout(() => { this.showToast = false; }, 2000);
+          });
+        },
+
+        copyCssVariables() {
+          const palette = generatePalettes(this.hue, this.saturation, this.lightness)[this.paletteType];
+          let css = ':root {\n';
+          palette.forEach((c, i) => {
+            const hex = hslToHex(c.h, c.s, c.l);
+            css += `  --colour-${i + 1}: ${hex};\n`;
+          });
+          css += '}';
+          this.copyToClipboard(css);
+        },
+
+        copyPaletteJson() {
+          const palette = generatePalettes(this.hue, this.saturation, this.lightness)[this.paletteType];
+          const json = JSON.stringify(palette.map(c => ({
+            h: c.h, s: c.s, l: c.l,
+            hex: hslToHex(c.h, c.s, c.l),
+            rgb: hslToRgb(c.h, c.s, c.l)
+          })), null, 2);
+          this.copyToClipboard(json);
+        }
+      };
+    }
+  </script>
+</body>
+</html>

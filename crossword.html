@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline, no ads.">
+  <meta name="keywords" content="word puzzle, word game, solver, helper, free, offline">
+  <meta property="og:title" content="Crossword Solver — Word Puzzle Utilities">
+  <meta property="og:description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Crossword Solver — Word Puzzle Utilities">
+  <meta name="twitter:description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline, no ads.">
+  <title>Crossword Solver — Word Puzzle Utilities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200"
+      x-data="crossword()" x-init="init()">
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🔤 Crossword Solver</h1>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Light mode' : 'Dark mode'">
+        <span x-show="darkMode" class="text-lg">☀️</span>
+        <span x-show="!darkMode" class="text-lg">🌙</span>
+      </button>
+    </div>
+
+    <!-- Input -->
+    <div class="mb-4">
+      <input type="text" x-model="pattern" @input="onInput()" placeholder="C??SS?O?D"
+             x-ref="patternInput"
+             class="w-full px-4 py-3 text-xl font-mono border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-cyan-500 focus:outline-none transition uppercase"
+             maxlength="30" autocomplete="off" spellcheck="false">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Use <kbd class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">?</kbd> for unknown letters</p>
+    </div>
+
+    <!-- Sort controls -->
+    <div class="flex items-center gap-2 mb-3 text-sm" x-show="results.length > 0" x-cloak>
+      <span class="text-gray-500 dark:text-gray-400">Sort:</span>
+      <button @click="sortBy = 'score'; sortResults()" :class="sortBy === 'score' ? 'bg-blue-100 dark:bg-cyan-900 text-blue-700 dark:text-cyan-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1 rounded-md font-medium transition">Score</button>
+      <button @click="sortBy = 'alpha'; sortResults()" :class="sortBy === 'alpha' ? 'bg-blue-100 dark:bg-cyan-900 text-blue-700 dark:text-cyan-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1 rounded-md font-medium transition">A→Z</button>
+      <button @click="sortBy = 'length'; sortResults()" :class="sortBy === 'length' ? 'bg-blue-100 dark:bg-cyan-900 text-blue-700 dark:text-cyan-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1 rounded-md font-medium transition">Length</button>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 py-2 border-b border-gray-100 dark:border-gray-700 mb-4" x-show="searched" x-cloak>
+      <span><strong class="text-gray-900 dark:text-gray-100" x-text="results.length"></strong> results</span>
+      <span>in <strong class="text-gray-900 dark:text-gray-100" x-text="searchTime"></strong>ms</span>
+    </div>
+
+    <!-- No results -->
+    <div class="text-center py-8 text-gray-400 dark:text-gray-500" x-show="searched && results.length === 0" x-cloak>
+      <p class="text-lg mb-1">No matches found</p>
+      <p class="text-sm">Try a different pattern</p>
+    </div>
+
+    <!-- Results grouped by length -->
+    <template x-for="group in groupedResults" :key="group.length">
+      <div class="mb-4">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2" x-text="group.length + '-letter words'"></h3>
+        <ul class="flex flex-wrap gap-2">
+          <template x-for="r in group.words" :key="r.word">
+            <li @click="copyWord(r.word)" class="px-3 py-1.5 bg-white dark:bg-gray-800 rounded-md font-mono text-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-cyan-900/30 hover:border-blue-200 dark:hover:border-cyan-700 transition group" :title="'Click to copy — Score: ' + r.score">
+              <span class="text-gray-900 dark:text-gray-100" x-text="r.word"></span>
+              <span class="text-xs text-gray-400 dark:text-gray-500 ml-1.5 group-hover:text-blue-500 dark:group-hover:text-cyan-400" x-text="r.score"></span>
+            </li>
+          </template>
+        </ul>
+      </div>
+    </template>
+
+    <!-- Copied toast -->
+    <div x-show="copied" x-transition x-cloak class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg">Copied!</div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
+      <a href="index.html" class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script src="js/wordlist.js"></script>
+  <script src="js/word-engine.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
+    function crossword() {
+      return {
+        darkMode: false,
+        pattern: '',
+        results: [],
+        groupedResults: [],
+        sortBy: 'score',
+        searchTime: 0,
+        searched: false,
+        copied: false,
+        debounceTimer: null,
+        engine: null,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.engine = new WordEngine(window.WORDLIST);
+          this.$refs.patternInput.focus();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        onInput() {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = setTimeout(() => this.search(), 150);
+        },
+
+        search() {
+          const p = this.pattern.replace(/[^A-Za-z?*]/g, '').toUpperCase();
+          if (!p || !/[A-Z]/.test(p)) {
+            this.results = [];
+            this.groupedResults = [];
+            this.searched = false;
+            return;
+          }
+          const t0 = performance.now();
+          this.results = this.engine.patternSearch(p);
+          const t1 = performance.now();
+          this.searchTime = Math.round(t1 - t0);
+          this.searched = true;
+          this.sortResults();
+        },
+
+        sortResults() {
+          let sorted = [...this.results];
+          if (this.sortBy === 'alpha') {
+            sorted.sort((a, b) => a.word.localeCompare(b.word));
+          } else if (this.sortBy === 'length') {
+            sorted.sort((a, b) => a.length - b.length || b.score - a.score);
+          } else {
+            sorted.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word));
+          }
+          this.results = sorted;
+          this.groupResults();
+        },
+
+        groupResults() {
+          const groups = {};
+          for (const r of this.results) {
+            if (!groups[r.length]) groups[r.length] = [];
+            groups[r.length].push(r);
+          }
+          this.groupedResults = Object.entries(groups)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([length, words]) => ({ length: Number(length), words }));
+        },
+
+        copyWord(word) {
+          navigator.clipboard.writeText(word).then(() => {
+            this.copied = true;
+            setTimeout(() => this.copied = false, 1200);
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

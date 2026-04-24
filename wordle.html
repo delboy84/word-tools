@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free Wordle solver — get optimal guesses based on your feedback. Supports hard mode. Works offline, no ads.">
+  <meta name="keywords" content="word puzzle, word game, solver, helper, free, offline">
+  <meta property="og:title" content="Wordle Solver — Word Puzzle Utilities">
+  <meta property="og:description" content="Free Wordle solver — get optimal guesses based on your feedback. Supports hard mode. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Wordle Solver — Word Puzzle Utilities">
+  <meta name="twitter:description" content="Free Wordle solver — get optimal guesses based on your feedback. Supports hard mode. Works offline, no ads.">
+  <title>Wordle Solver — Word Puzzle Utilities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    .letter-box {
+      width: 2.5rem; height: 2.5rem;
+      text-align: center; font-size: 1.1rem; font-weight: 700;
+      text-transform: uppercase; font-family: monospace;
+    }
+    .colour-btn { width: 2rem; height: 2rem; font-size: 0.75rem; padding: 0; line-height: 1; }
+    @media (min-width: 400px) {
+      .letter-box { width: 3rem; height: 3rem; font-size: 1.25rem; }
+      .colour-btn { width: 2.25rem; height: 2.25rem; font-size: 0.8rem; }
+    }
+    .green-btn { background: #538d4e; color: #fff; border: 2px solid #538d4e; }
+    .green-btn.active { border-color: #fff; box-shadow: 0 0 0 2px #538d4e; }
+    .yellow-btn { background: #b59f3b; color: #fff; border: 2px solid #b59f3b; }
+    .yellow-btn.active { border-color: #fff; box-shadow: 0 0 0 2px #b59f3b; }
+    .grey-btn { background: #3a3a3c; color: #fff; border: 2px solid #3a3a3c; }
+    .grey-btn.active { border-color: #fff; box-shadow: 0 0 0 2px #3a3a3c; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200"
+      x-data="wordle()" x-init="init()">
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🟩 Wordle Solver</h1>
+      <div class="flex items-center gap-2">
+        <!-- Hard mode toggle -->
+        <button @click="hardMode = !hardMode; solve()" class="px-3 py-1.5 rounded-md text-xs font-medium transition border"
+                :class="hardMode ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300' : 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400'">
+          Hard mode
+        </button>
+        <!-- Dark mode toggle -->
+        <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition">
+          <span x-show="darkMode" class="text-lg">☀️</span>
+          <span x-show="!darkMode" class="text-lg">🌙</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Guess rows -->
+    <div class="space-y-4 mb-6">
+      <template x-for="(guess, gi) in guesses" :key="gi">
+        <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+          <!-- Remove button -->
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase" x-text="'Guess ' + (gi + 1)"></span>
+            <button x-show="guesses.length > 1" @click="removeGuess(gi)" class="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">✕ Remove</button>
+          </div>
+          <!-- Letters + colours -->
+          <div class="flex flex-wrap gap-2 justify-center">
+            <template x-for="(letter, li) in guess.letters" :key="li">
+              <div class="flex flex-col items-center gap-1">
+                <input type="text" x-model="guess.letters[li]" @input="onLetterInput(gi, li)" @keydown.backspace="onBackspace(gi, li, $event)"
+                       :class="{
+                         'border-green-500 dark:border-green-400 bg-green-50 dark:bg-green-900/20': guess.colours[li] === 'green',
+                         'border-yellow-500 dark:border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20': guess.colours[li] === 'yellow',
+                         'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700': guess.colours[li] === 'grey'
+                       }"
+                       class="letter-box border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-cyan-500 text-gray-900 dark:text-gray-100"
+                       maxlength="1" autocomplete="off" spellcheck="false"
+                       :x-ref="'letter-' + gi + '-' + li">
+                <div class="flex gap-1">
+                  <button @click="guess.colours[li] = 'green'; solve()" class="colour-btn rounded green-btn" :class="{ 'active': guess.colours[li] === 'green' }" title="Correct position">🟩</button>
+                  <button @click="guess.colours[li] = 'yellow'; solve()" class="colour-btn rounded yellow-btn" :class="{ 'active': guess.colours[li] === 'yellow' }" title="Wrong position">🟨</button>
+                  <button @click="guess.colours[li] = 'grey'; solve()" class="colour-btn rounded grey-btn" :class="{ 'active': guess.colours[li] === 'grey' }" title="Not in word">⬛</button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Add guess button -->
+    <button @click="addGuess()" x-show="guesses.length < 6" class="w-full py-2 mb-6 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-blue-400 dark:hover:border-cyan-500 hover:text-blue-500 dark:hover:text-cyan-400 transition text-sm font-medium">+ Add guess</button>
+
+    <!-- Reset -->
+    <button @click="reset()" class="w-full py-2 mb-6 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-sm font-medium">Reset</button>
+
+    <!-- Results -->
+    <template x-if="solved">
+      <div>
+        <!-- Big remaining count -->
+        <div class="text-center mb-6">
+          <div class="text-5xl font-bold" :class="remainingCount <= 10 ? 'text-green-600 dark:text-green-400' : remainingCount <= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-gray-100'" x-text="remainingCount"></div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">possible answers remaining</div>
+        </div>
+
+        <!-- Suggestions -->
+        <div x-show="suggestions.length > 0" class="mb-6">
+          <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">Suggested next guesses</h3>
+          <div class="flex flex-wrap gap-2">
+            <template x-for="(s, si) in suggestions" :key="si">
+              <button @click="copyWord(s)" class="px-4 py-2 bg-blue-600 dark:bg-cyan-600 text-white rounded-lg font-mono text-sm font-bold hover:bg-blue-700 dark:hover:bg-cyan-700 transition" x-text="s"></button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Remaining answers (collapsible) -->
+        <div x-show="remainingCount > 0" class="mb-4">
+          <button @click="showAll = !showAll" class="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition mb-2">
+            <span x-text="showAll ? '▾' : '▸'"></span>
+            <span x-text="'All ' + remainingCount + ' possible answers'"></span>
+          </button>
+          <div x-show="showAll" x-collapse>
+            <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto p-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+              <template x-for="word in remainingWords" :key="word">
+                <span @click="copyWord(word)" class="px-2 py-1 rounded bg-gray-50 dark:bg-gray-700 font-mono text-sm text-gray-900 dark:text-gray-100 cursor-pointer hover:bg-blue-100 dark:hover:bg-cyan-900/30 transition" x-text="word"></span>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- No answers left -->
+        <div x-show="remainingCount === 0" class="text-center py-8 text-gray-400 dark:text-gray-500">
+          <p class="text-lg mb-1">No possible answers</p>
+          <p class="text-sm">Check your colour feedback — something may be inconsistent</p>
+        </div>
+      </div>
+    </template>
+
+    <!-- Copied toast -->
+    <div x-show="copied" x-transition x-cloak class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg">Copied!</div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
+      <a href="index.html" class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script src="js/wordlist.js"></script>
+  <script src="js/word-engine.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
+    function wordle() {
+      return {
+        darkMode: false,
+        hardMode: false,
+        guesses: [],
+        remainingWords: [],
+        remainingCount: 0,
+        suggestions: [],
+        solved: false,
+        showAll: false,
+        copied: false,
+        engine: null,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.engine = new WordEngine(window.WORDLIST);
+          this.reset();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        reset() {
+          this.guesses = [this.makeGuess()];
+          this.remainingWords = [];
+          this.remainingCount = 0;
+          this.suggestions = [];
+          this.solved = false;
+          this.showAll = false;
+        },
+
+        makeGuess() {
+          return {
+            letters: ['', '', '', '', ''],
+            colours: ['grey', 'grey', 'grey', 'grey', 'grey']
+          };
+        },
+
+        addGuess() {
+          this.guesses.push(this.makeGuess());
+        },
+
+        removeGuess(index) {
+          this.guesses.splice(index, 1);
+          this.solve();
+        },
+
+        onLetterInput(gi, li) {
+          // Auto-uppercase
+          const g = this.guesses[gi];
+          g.letters[li] = g.letters[li].toUpperCase().replace(/[^A-Z]/g, '');
+          // Auto-advance to next input
+          if (g.letters[li] && li < 4) {
+            const ref = this.$refs['letter-' + gi + '-' + (li + 1)];
+            if (ref) ref.focus();
+          }
+          this.solve();
+        },
+
+        onBackspace(gi, li, event) {
+          const g = this.guesses[gi];
+          if (!g.letters[li] && li > 0) {
+            event.preventDefault();
+            g.letters[li - 1] = '';
+            const ref = this.$refs['letter-' + gi + '-' + (li - 1)];
+            if (ref) ref.focus();
+            this.solve();
+          }
+        },
+
+        solve() {
+          // Build guess list for the engine
+          const engineGuesses = [];
+          for (const g of this.guesses) {
+            const word = g.letters.join('');
+            if (word.length !== 5) continue; // skip incomplete
+            engineGuesses.push({
+              word,
+              feedback: [...g.colours]
+            });
+          }
+
+          if (engineGuesses.length === 0) {
+            // No complete guesses — show all Wordle answers
+            this.remainingWords = this.engine.getWordleAnswers();
+            this.remainingCount = this.remainingWords.length;
+            this.suggestions = this.remainingWords.slice(0, 10);
+            this.solved = true;
+            return;
+          }
+
+          const result = this.engine.wordleFilter(engineGuesses);
+          this.remainingWords = result.remaining;
+          this.remainingCount = result.remainingCount;
+          this.suggestions = result.suggestions;
+          this.solved = true;
+
+          // Hard mode: filter suggestions to only remaining answers
+          if (this.hardMode && this.remainingCount > 10) {
+            // In hard mode, you can only guess from remaining answers
+            this.suggestions = this.remainingWords.slice(0, 10);
+          }
+        },
+
+        copyWord(word) {
+          navigator.clipboard.writeText(word).then(() => {
+            this.copied = true;
+            setTimeout(() => this.copied = false, 1200);
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

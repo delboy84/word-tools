@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free Scrabble word finder — find highest-scoring words from your rack and board letters. Works offline, no ads.">
+  <meta name="keywords" content="word puzzle, word game, solver, helper, free, offline">
+  <meta property="og:title" content="Scrabble Finder — Word Puzzle Utilities">
+  <meta property="og:description" content="Free Scrabble word finder — find highest-scoring words from your rack and board letters. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Scrabble Finder — Word Puzzle Utilities">
+  <meta name="twitter:description" content="Free Scrabble word finder — find highest-scoring words from your rack and board letters. Works offline, no ads.">
+  <title>Scrabble Finder — Word Puzzle Utilities</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200"
+      x-data="scrabble()" x-init="init()">
+
+  <div class="max-w-2xl mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">🀄 Scrabble Finder</h1>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition">
+        <span x-show="darkMode" class="text-lg">☀️</span>
+        <span x-show="!darkMode" class="text-lg">🌙</span>
+      </button>
+    </div>
+
+    <!-- Rack input -->
+    <div class="mb-3">
+      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rack letters</label>
+      <input type="text" x-model="rack" @input="onInput()" placeholder="e.g. SATIRE or SAT?RE"
+             x-ref="rackInput"
+             class="w-full px-4 py-3 text-xl font-mono border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-cyan-500 focus:outline-none transition uppercase"
+             maxlength="7" autocomplete="off" spellcheck="false">
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Up to 7 tiles. Use <kbd class="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs font-mono">?</kbd> for blanks</p>
+    </div>
+
+    <!-- Board letters -->
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Board letters <span class="text-gray-400">(optional)</span></label>
+      <input type="text" x-model="boardLetters" @input="onInput()" placeholder="Letters already on the board"
+             class="w-full px-4 py-2 text-base font-mono border-2 border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:border-blue-500 dark:focus:border-cyan-500 focus:outline-none transition uppercase"
+             maxlength="10" autocomplete="off" spellcheck="false">
+    </div>
+
+    <!-- Length filter -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button @click="setFilter(null)" :class="lengthFilter === null ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-sm font-medium transition">All</button>
+      <template x-for="len in availableLengths" :key="len">
+        <button @click="setFilter(len)" :class="lengthFilter === len ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 rounded-md text-sm font-medium transition" x-text="len + '-letter'"></button>
+      </template>
+    </div>
+
+    <!-- Stats bar -->
+    <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 py-2 border-b border-gray-100 dark:border-gray-700 mb-4" x-show="searched" x-cloak>
+      <span><strong class="text-gray-900 dark:text-gray-100" x-text="filteredResults.length"></strong> results</span>
+      <span x-show="filteredResults.length > 0">highest: <strong class="text-green-600 dark:text-green-400" x-text="filteredResults[0]?.score || 0"></strong></span>
+      <span>in <strong class="text-gray-900 dark:text-gray-100" x-text="searchTime"></strong>ms</span>
+    </div>
+
+    <!-- No results -->
+    <div class="text-center py-8 text-gray-400 dark:text-gray-500" x-show="searched && filteredResults.length === 0" x-cloak>
+      <p class="text-lg mb-1">No words found</p>
+      <p class="text-sm">Try different rack letters</p>
+    </div>
+
+    <!-- Results -->
+    <template x-for="r in filteredResults" :key="r.word">
+      <div @click="copyWord(r.word)" class="flex items-center justify-between px-4 py-2.5 mb-1.5 bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-blue-50 dark:hover:bg-cyan-900/20 hover:border-blue-200 dark:hover:border-cyan-700 transition group">
+        <div class="flex items-center gap-2">
+          <span class="font-mono font-semibold text-gray-900 dark:text-gray-100" x-text="r.word"></span>
+          <span x-show="r.usesBlank" class="text-xs bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded" title="Uses blank tile">🟡</span>
+          <span x-show="r.isBingo" class="text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 rounded font-bold" title="Bingo! All 7 tiles used">⭐ Bingo</span>
+        </div>
+        <span class="font-mono font-bold text-green-600 dark:text-green-400 group-hover:text-green-700 dark:group-hover:text-green-300" x-text="r.score"></span>
+      </div>
+    </template>
+
+    <!-- Copied toast -->
+    <div x-show="copied" x-transition x-cloak class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 px-4 py-2 rounded-lg text-sm font-medium shadow-lg">Copied!</div>
+
+    <!-- Footer -->
+    <div class="mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
+      <a href="index.html" class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script src="js/wordlist.js"></script>
+  <script src="js/word-engine.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
+    function scrabble() {
+      return {
+        darkMode: false,
+        rack: '',
+        boardLetters: '',
+        lengthFilter: null,
+        results: [],
+        filteredResults: [],
+        availableLengths: [],
+        searchTime: 0,
+        searched: false,
+        copied: false,
+        debounceTimer: null,
+        engine: null,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.engine = new WordEngine(window.WORDLIST);
+          this.$refs.rackInput.focus();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        onInput() {
+          clearTimeout(this.debounceTimer);
+          this.debounceTimer = setTimeout(() => this.search(), 200);
+        },
+
+        search() {
+          const r = this.rack.replace(/[^A-Za-z?]/g, '').toUpperCase();
+          if (!r || r.length < 1) {
+            this.results = [];
+            this.filteredResults = [];
+            this.availableLengths = [];
+            this.searched = false;
+            return;
+          }
+          const b = this.boardLetters.replace(/[^A-Za-z]/g, '').toUpperCase();
+          const t0 = performance.now();
+          this.results = this.engine.scrabbleSearch(r, b);
+          const t1 = performance.now();
+          this.searchTime = Math.round(t1 - t0);
+          this.searched = true;
+
+          // Compute available lengths
+          const lens = new Set(this.results.map(r => r.word.length));
+          this.availableLengths = [...lens].sort((a, b) => a - b);
+          this.applyFilter();
+        },
+
+        setFilter(len) {
+          this.lengthFilter = len;
+          this.applyFilter();
+        },
+
+        applyFilter() {
+          if (this.lengthFilter === null) {
+            this.filteredResults = this.results;
+          } else {
+            this.filteredResults = this.results.filter(r => r.word.length === this.lengthFilter);
+          }
+        },
+
+        copyWord(word) {
+          navigator.clipboard.writeText(word).then(() => {
+            this.copied = true;
+            setTimeout(() => this.copied = false, 1200);
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>
