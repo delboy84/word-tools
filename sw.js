@@ -10,6 +10,7 @@ const ASSETS = [
   '/sudoku.html',
   '/tip-split.html',
   '/cooking.html',
+  '/about.html',
   '/js/wordlist.js',
   '/js/word-engine.js',
   '/js/colour-engine.js',
