@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles with constraint propagation and backtracking. Get hints, validate entries, and copy solutions. Works offline, no ads.">
+  <meta name="keywords" content="sudoku solver, sudoku, puzzle solver, backtracking, constraint propagation, 16x16 sudoku">
+  <meta property="og:title" content="Sudoku Solver">
+  <meta property="og:description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Sudoku Solver">
+  <meta name="twitter:description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles. Works offline, no ads.">
+  <title>Sudoku Solver — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .sudoku-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-weight: 600;
+      outline: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+    .sudoku-input:focus {
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 2px;
+    }
+    .dark .sudoku-input:focus {
+      background: rgba(96, 165, 250, 0.15);
+    }
+    @media (max-width: 480px) {
+      .grid-16 { font-size: 0.6rem; }
+      .grid-16 input { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="sudokuApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">🔢 Sudoku Solver</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Solve any puzzle instantly</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Grid Size Tabs -->
+    <div class="flex gap-2 mb-4">
+      <template x-for="size in [4, 9, 16]" :key="size">
+        <button @click="switchSize(size)" :class="gridSize === size ? 'bg-blue-600 text-white dark:bg-cyan-600 dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'" class="px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition" x-text="size + '×' + size"></button>
+      </template>
+    </div>
+
+    <!-- Grid -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-4 overflow-x-auto">
+      <div :style="'display: grid; grid-template-columns: repeat(' + gridSize + ', 1fr); gap: 0px;'" :class="gridSize === 16 ? 'max-w-[540px] mx-auto' : 'max-w-[400px] mx-auto'">
+        <template x-for="(row, r) in grid" :key="r">
+          <template x-for="(cell, c) in row" :key="c">
+            <div :class="getCellClasses(r, c)"
+                 :style="getCellStyle(r, c)"
+                 class="relative flex items-center justify-center"
+                 :style="'aspect-ratio: 1;'">
+              <input type="text"
+                     inputmode="numeric"
+                     :maxlength="gridSize >= 16 ? 2 : 1"
+                     :value="cell.value || ''"
+                     @input="onInput(r, c, $event)"
+                     @keydown="onKeyDown(r, c, $event)"
+                     @focus="selectedCell = [r, c]"
+                     :class="getCellInputClasses(r, c)"
+                     :style="getCellStyle(r, c)"
+                     class="sudoku-input"
+                     :aria-label="'Row ' + (r+1) + ' Column ' + (c+1)">
+            </div>
+          </template>
+        </template>
+      </div>
+    </div>
+
+    <!-- Validation message -->
+    <div x-show="validationMsg" x-transition class="mb-3 p-3 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800" x-text="validationMsg"></div>
+
+    <!-- Button Row -->
+    <div class="flex flex-wrap gap-2 md:gap-3 mb-4">
+      <button @click="solve()" :disabled="solving" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-blue-600 hover:bg-blue-700 dark:bg-cyan-600 dark:hover:bg-cyan-700 text-white rounded-lg font-medium text-sm md:text-base transition disabled:opacity-50">
+        <span x-show="!solving">✓ Solve</span>
+        <span x-show="solving">Solving…</span>
+      </button>
+      <button @click="hint()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        💡 Hint
+      </button>
+      <button @click="clearGrid()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        ✕ Clear
+      </button>
+      <button @click="loadExample()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        📋 Example
+      </button>
+    </div>
+
+    <!-- Solution Info -->
+    <div x-show="solutionInfo" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-4">
+      <div class="flex flex-wrap gap-4 md:gap-6 text-sm text-gray-600 dark:text-gray-400">
+        <div><span class="font-semibold text-gray-900 dark:text-gray-100">Steps:</span> <span x-text="solutionInfo?.steps ?? 0"></span></div>
+        <div><span class="font-semibold text-gray-900 dark:text-gray-100">Time:</span> <span x-text="solutionInfo?.time ?? '—'"></span></div>
+        <div x-show="solutionInfo?.solved"><span class="font-semibold text-green-600 dark:text-green-400">✓ Solved</span></div>
+        <div x-show="solutionInfo && !solutionInfo?.solved"><span class="font-semibold text-red-600 dark:text-red-400">✗ No solution</span></div>
+      </div>
+      <div x-show="solutionInfo?.solved" class="mt-3">
+        <button @click="copySolution()" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline font-medium">
+          📋 Copy solution
+        </button>
+        <span x-show="copied" class="text-xs text-green-600 dark:text-green-400 ml-2">Copied!</span>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← Back to Word Tools</a>
+    </div>
+  </div>
+
+  <script>
+    function sudokuApp() {
+      const EXAMPLES = {
+        4: [
+          [0,0,0,0],
+          [0,2,0,1],
+          [0,1,0,4],
+          [0,0,0,0]
+        ],
+        9: [
+          [5,3,0,0,7,0,0,0,0],
+          [6,0,0,1,9,5,0,0,0],
+          [0,9,8,0,0,0,0,6,0],
+          [8,0,0,0,6,0,0,0,3],
+          [4,0,0,8,0,3,0,0,1],
+          [7,0,0,0,2,0,0,0,6],
+          [0,6,0,0,0,0,2,8,0],
+          [0,0,0,4,1,9,0,0,5],
+          [0,0,0,0,8,0,0,7,9]
+        ],
+        16: null // Too complex for a good example, will generate one
+      };
+
+      return {
+        darkMode: false,
+        gridSize: 9,
+        grid: [],
+        selectedCell: null,
+        solving: false,
+        solutionInfo: null,
+        validationMsg: '',
+        copied: false,
+        hintCells: [],
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.resetGrid();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        resetGrid() {
+          const n = this.gridSize;
+          this.grid = Array.from({length: n}, () => Array.from({length: n}, () => ({value: 0, given: false, hinted: false})));
+          this.solutionInfo = null;
+          this.validationMsg = '';
+          this.hintCells = [];
+        },
+
+        switchSize(size) {
+          this.gridSize = size;
+          this.resetGrid();
+        },
+
+        onInput(r, c, event) {
+          const n = this.gridSize;
+          const maxVal = n;
+          let raw = event.target.value.replace(/[^0-9]/g, '');
+          if (n === 16) {
+            // Allow hex-like: 1-9, A-G (but we use 1-16)
+            if (parseInt(raw) > 16) raw = raw.slice(0, -1);
+          } else {
+            if (parseInt(raw) > maxVal) raw = '';
+          }
+          const val = raw ? parseInt(raw) : 0;
+          if (val > 0 && val > maxVal) {
+            event.target.value = this.grid[r][c].value || '';
+            return;
+          }
+          this.grid[r][c].value = val;
+          this.grid[r][c].given = val > 0;
+          this.grid[r][c].hinted = false;
+          this.solutionInfo = null;
+          this.validate();
+        },
+
+        onKeyDown(r, c, event) {
+          const n = this.gridSize;
+          let nr = r, nc = c;
+          if (event.key === 'ArrowUp') nr = Math.max(0, r - 1);
+          else if (event.key === 'ArrowDown') nr = Math.min(n - 1, r + 1);
+          else if (event.key === 'ArrowLeft') nc = Math.max(0, c - 1);
+          else if (event.key === 'ArrowRight') nc = Math.min(n - 1, c + 1);
+          else if (event.key === 'Backspace' || event.key === 'Delete') {
+            this.grid[r][c].value = 0;
+            this.grid[r][c].given = false;
+            this.grid[r][c].hinted = false;
+            this.solutionInfo = null;
+            this.validate();
+            return;
+          } else return;
+
+          if (nr !== r || nc !== c) {
+            event.preventDefault();
+            // Focus the input at the new position
+            const inputs = document.querySelectorAll('.sudoku-input');
+            const idx = nr * n + nc;
+            if (inputs[idx]) inputs[idx].focus();
+          }
+        },
+
+        getCellClasses(r, c) {
+          return '';
+        },
+
+        getCellStyle(r, c) {
+          const n = this.gridSize;
+          const box = n === 4 ? 2 : n === 9 ? 3 : 4;
+          let border = {};
+          const right = (c + 1) % box === 0 && c < n - 1 ? '2px solid ' + (this.darkMode ? '#6b7280' : '#374151') : '1px solid ' + (this.darkMode ? '#374151' : '#d1d5db');
+          const bottom = (r + 1) % box === 0 && r < n - 1 ? '2px solid ' + (this.darkMode ? '#6b7280' : '#374151') : '1px solid ' + (this.darkMode ? '#374151' : '#d1d5db');
+          const left = c === 0 ? '2px solid ' + (this.darkMode ? '#6b7280' : '#374151') : 'none';
+          const top = r === 0 ? '2px solid ' + (this.darkMode ? '#6b7280' : '#374151') : 'none';
+
+          const isGiven = this.grid[r] && this.grid[r][c] && this.grid[r][c].given;
+          const isHinted = this.grid[r] && this.grid[r][c] && this.grid[r][c].hinted;
+          const isInvalid = this.isCellInvalid(r, c);
+
+          const fontSize = n === 4 ? '1.25rem' : n === 9 ? '1rem' : '0.7rem';
+          const bg = isInvalid ? (this.darkMode ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.1)') : isHinted ? (this.darkMode ? 'rgba(34,211,238,0.2)' : 'rgba(59,130,246,0.1)') : isGiven ? (this.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)') : 'transparent';
+
+          return `border-right: ${right}; border-bottom: ${bottom}; border-left: ${left}; border-top: ${top}; font-size: ${fontSize}; background: ${bg};`;
+        },
+
+        getCellInputClasses(r, c) {
+          const n = this.gridSize;
+          const cell = this.grid[r][c];
+          let cls = '';
+          if (cell.given) cls += ' font-bold';
+          if (cell.hinted) cls += ' text-blue-600 dark:text-cyan-400';
+          return cls;
+        },
+
+        isCellInvalid(r, c) {
+          const val = this.grid[r][c].value;
+          if (!val) return false;
+          const n = this.gridSize;
+          // Check row
+          for (let cc = 0; cc < n; cc++) {
+            if (cc !== c && this.grid[r][cc].value === val) return true;
+          }
+          // Check col
+          for (let rr = 0; rr < n; rr++) {
+            if (rr !== r && this.grid[rr][c].value === val) return true;
+          }
+          // Check box
+          const box = n === 4 ? 2 : n === 9 ? 3 : 4;
+          const br = Math.floor(r / box) * box;
+          const bc = Math.floor(c / box) * box;
+          for (let rr = br; rr < br + box; rr++) {
+            for (let cc = bc; cc < bc + box; cc++) {
+              if (rr !== r || cc !== c) {
+                if (this.grid[rr][cc].value === val) return true;
+              }
+            }
+          }
+          return false;
+        },
+
+        validate() {
+          // Check if any invalid cells exist
+          const n = this.gridSize;
+          let invalids = 0;
+          for (let r = 0; r < n; r++)
+            for (let c = 0; c < n; c++)
+              if (this.isCellInvalid(r, c)) invalids++;
+          this.validationMsg = invalids > 0 ? `${invalids} cell${invalids > 1 ? 's' : ''} with conflicts` : '';
+        },
+
+        loadExample() {
+          const example = EXAMPLES[this.gridSize];
+          if (!example) {
+            // Generate a simple 16x16 example (mostly empty with a few given)
+            this.resetGrid();
+            // Just seed a few cells
+            const seeds = [[0,0,1],[0,1,2],[1,0,3],[1,3,4],[2,2,5],[3,1,6]];
+            seeds.forEach(([r,c,v]) => {
+              this.grid[r][c] = {value: v, given: true, hinted: false};
+            });
+            this.solutionInfo = null;
+            return;
+          }
+          const n = this.gridSize;
+          this.grid = example.map(row => row.map(v => ({value: v, given: v > 0, hinted: false})));
+          this.solutionInfo = null;
+          this.validationMsg = '';
+        },
+
+        clearGrid() {
+          this.resetGrid();
+        },
+
+        solve() {
+          const n = this.gridSize;
+          const board = this.grid.map(row => row.map(cell => cell.value));
+          let steps = 0;
+          const t0 = performance.now();
+
+          const result = this.solveSudoku(board, n, () => steps++);
+
+          const t1 = performance.now();
+          const elapsed = t1 - t0;
+
+          if (result) {
+            for (let r = 0; r < n; r++) {
+              for (let c = 0; c < n; c++) {
+                if (!this.grid[r][c].given) {
+                  this.grid[r][c].value = result[r][c];
+                }
+              }
+            }
+            this.solutionInfo = { solved: true, steps, time: elapsed < 1 ? '< 1ms' : Math.round(elapsed) + 'ms' };
+          } else {
+            this.solutionInfo = { solved: false, steps, time: elapsed < 1 ? '< 1ms' : Math.round(elapsed) + 'ms' };
+          }
+        },
+
+        solveSudoku(board, n, stepCounter) {
+          const box = n === 4 ? 2 : n === 9 ? 3 : 4;
+          const possible = Array.from({length: n}, () => Array.from({length: n}, () => null));
+
+          // Initialize possible values
+          for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+              if (board[r][c] === 0) {
+                possible[r][c] = new Set();
+                for (let v = 1; v <= n; v++) possible[r][c].add(v);
+              }
+            }
+          }
+
+          // Constraint propagation
+          const propagate = () => {
+            let changed = true;
+            while (changed) {
+              changed = false;
+              for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                  if (board[r][c] !== 0) {
+                    const val = board[r][c];
+                    // Remove from row
+                    for (let cc = 0; cc < n; cc++) {
+                      if (possible[r][cc] && possible[r][cc].delete(val)) changed = true;
+                    }
+                    // Remove from col
+                    for (let rr = 0; rr < n; rr++) {
+                      if (possible[rr][c] && possible[rr][c].delete(val)) changed = true;
+                    }
+                    // Remove from box
+                    const br = Math.floor(r / box) * box;
+                    const bc = Math.floor(c / box) * box;
+                    for (let rr = br; rr < br + box; rr++) {
+                      for (let cc = bc; cc < bc + box; cc++) {
+                        if (possible[rr][cc] && possible[rr][cc].delete(val)) changed = true;
+                      }
+                    }
+                  }
+                }
+              }
+              // Naked singles
+              for (let r = 0; r < n; r++) {
+                for (let c = 0; c < n; c++) {
+                  if (possible[r][c] && possible[r][c].size === 1) {
+                    board[r][c] = [...possible[r][c]][0];
+                    possible[r][c] = null;
+                    stepCounter();
+                    changed = true;
+                  }
+                  if (possible[r][c] && possible[r][c].size === 0) {
+                    return false; // Invalid
+                  }
+                }
+              }
+            }
+            return true;
+          };
+
+          if (!propagate()) return null;
+
+          // Find empty cell with minimum remaining values (MRV heuristic)
+          let minLen = n + 1, bestR = -1, bestC = -1;
+          for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+              if (board[r][c] === 0 && possible[r][c]) {
+                if (possible[r][c].size < minLen) {
+                  minLen = possible[r][c].size;
+                  bestR = r;
+                  bestC = c;
+                }
+              }
+            }
+          }
+
+          if (bestR === -1) return board; // All filled
+
+          if (minLen === 0) return null; // Dead end
+
+          for (const val of [...possible[bestR][bestC]]) {
+            stepCounter();
+            const boardCopy = board.map(row => [...row]);
+            boardCopy[bestR][bestC] = val;
+            const result = this.solveSudoku(boardCopy, n, stepCounter);
+            if (result) return result;
+          }
+
+          return null;
+        },
+
+        hint() {
+          const n = this.gridSize;
+          // First, solve the current puzzle
+          const board = this.grid.map(row => row.map(cell => cell.value));
+          let steps = 0;
+          const result = this.solveSudoku(board, n, () => steps++);
+          if (!result) {
+            this.validationMsg = 'No solution found — cannot give hint';
+            return;
+          }
+          // Find an empty cell and fill it
+          const emptyCells = [];
+          for (let r = 0; r < n; r++) {
+            for (let c = 0; c < n; c++) {
+              if (!this.grid[r][c].given && !this.grid[r][c].hinted && this.grid[r][c].value === 0) {
+                emptyCells.push([r, c]);
+              }
+            }
+          }
+          if (emptyCells.length === 0) {
+            this.validationMsg = 'Puzzle already complete!';
+            return;
+          }
+          const [hr, hc] = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+          this.grid[hr][hc].value = result[hr][hc];
+          this.grid[hr][hc].hinted = true;
+          this.validationMsg = '';
+          this.validate();
+        },
+
+        copySolution() {
+          const n = this.gridSize;
+          const text = this.grid.map(row => row.map(cell => {
+            const v = cell.value;
+            if (n === 16) return v < 10 ? String(v) : String.fromCharCode(55 + v); // A-G for 10-16
+            return String(v);
+          }).join(' ')).join('\n');
+          navigator.clipboard.writeText(text).then(() => {
+            this.copied = true;
+            setTimeout(() => this.copied = false, 2000);
+          });
+        }
+      };
+    }
+  </script>
+</body>
+</html>

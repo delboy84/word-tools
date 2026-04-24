@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free tip calculator and bill splitter — calculate tips with presets, split bills between friends, round up per person. Works offline, no ads.">
+  <meta name="keywords" content="tip calculator, bill splitter, tip percentage, split bill, restaurant tip, rounding">
+  <meta property="og:title" content="Tip Calculator & Bill Splitter">
+  <meta property="og:description" content="Free tip calculator and bill splitter — calculate tips and split bills between friends. Works offline, no ads.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Tip Calculator & Bill Splitter">
+  <meta name="twitter:description" content="Free tip calculator and bill splitter. Works offline, no ads.">
+  <title>Tip Calculator & Bill Splitter — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="tipApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">💰 Tip Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Calculate tips & split bills</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Bill Amount -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+      <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Bill Amount</label>
+      <div class="flex items-center gap-2">
+        <span class="text-2xl md:text-3xl font-bold text-gray-400 dark:text-gray-500" x-text="currencySymbol"></span>
+        <input type="number" x-model.number="billAmount" @input="calculate()" step="0.01" min="0" placeholder="0.00" class="w-full text-3xl md:text-4xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+      </div>
+    </div>
+
+    <!-- Tip Percentage -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+      <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Tip Percentage</label>
+      <div class="flex flex-wrap gap-2 mb-2">
+        <template x-for="pct in presetTips" :key="pct">
+          <button @click="selectTip(pct)" :class="tipPercent === pct && !customTip ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-4 py-2 rounded-lg text-sm md:text-base font-medium transition min-w-[3.5rem]" x-text="pct + '%'"></button>
+        </template>
+        <button @click="toggleCustom()" :class="customTip ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-4 py-2 rounded-lg text-sm md:text-base font-medium transition">Custom</button>
+      </div>
+      <div x-show="customTip" x-transition class="mt-2">
+        <div class="flex items-center gap-2">
+          <input type="number" x-model.number="tipPercent" @input="calculate()" min="0" max="100" step="1" class="w-20 text-center text-lg font-semibold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          <span class="text-lg text-gray-500 dark:text-gray-400">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Between -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+      <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Split Between</label>
+      <div class="flex items-center gap-3">
+        <button @click="adjustPeople(-1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-xl font-bold transition">−</button>
+        <span class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 min-w-[2rem] text-center" x-text="people"></span>
+        <button @click="adjustPeople(1)" class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 text-xl font-bold transition">+</button>
+        <span class="text-sm text-gray-500 dark:text-gray-400 ml-1">people</span>
+      </div>
+    </div>
+
+    <!-- Rounding -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+      <div class="flex items-center justify-between">
+        <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Round up each person</label>
+        <button @click="roundUp = !roundUp; calculate()" :class="roundUp ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+          <span :class="roundUp ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+      <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Summary</h2>
+
+      <div class="space-y-3">
+        <!-- Per Person -->
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4">
+          <div class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mb-1">Per Person</div>
+          <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="currencySymbol + perPersonTotal"></div>
+          <div class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Tip: <span class="font-medium text-gray-700 dark:text-gray-300" x-text="currencySymbol + perPersonTip"></span>
+          </div>
+        </div>
+
+        <!-- Totals -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Tip</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="currencySymbol + totalTip"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Grand Total</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="currencySymbol + grandTotal"></div>
+          </div>
+        </div>
+
+        <!-- Rounding note -->
+        <div x-show="roundUp && roundingDifference > 0" class="text-xs text-gray-500 dark:text-gray-400 bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+          💡 Rounding adds an extra <span class="font-medium text-green-700 dark:text-green-400" x-text="currencySymbol + roundingDifference"></span> total tip
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← Back to Word Tools</a>
+    </div>
+  </div>
+
+  <script>
+    function tipApp() {
+      return {
+        darkMode: false,
+        billAmount: null,
+        tipPercent: 20,
+        customTip: false,
+        people: 2,
+        roundUp: false,
+        presetTips: [15, 18, 20, 25],
+        currencySymbol: '$',
+
+        // Computed values
+        get totalTip() { return this.calcTotalTip(); },
+        get grandTotal() { return this.calcGrandTotal(); },
+        get perPersonTip() { return this.calcPerPersonTip(); },
+        get perPersonTotal() { return this.calcPerPersonTotal(); },
+        get roundingDifference() { return this.calcRoundingDifference(); },
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.calculate();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        selectTip(pct) {
+          this.tipPercent = pct;
+          this.customTip = false;
+          this.calculate();
+        },
+
+        toggleCustom() {
+          this.customTip = !this.customTip;
+          if (this.customTip) {
+            this.tipPercent = this.tipPercent || 0;
+          }
+        },
+
+        adjustPeople(delta) {
+          this.people = Math.max(1, Math.min(99, this.people + delta));
+          this.calculate();
+        },
+
+        calculate() {
+          // Trigger reactivity
+          this.billAmount;
+          this.tipPercent;
+          this.people;
+          this.roundUp;
+        },
+
+        calcTotalTip() {
+          const bill = parseFloat(this.billAmount) || 0;
+          const pct = parseFloat(this.tipPercent) || 0;
+          return this.fmt(bill * pct / 100);
+        },
+
+        calcGrandTotal() {
+          const bill = parseFloat(this.billAmount) || 0;
+          const pct = parseFloat(this.tipPercent) || 0;
+          const total = bill + bill * pct / 100;
+          if (this.roundUp && this.people > 1) {
+            const perPersonExact = total / this.people;
+            const perPersonRounded = Math.ceil(perPersonExact * 100) / 100;
+            return this.fmt(perPersonRounded * this.people);
+          }
+          return this.fmt(total);
+        },
+
+        calcPerPersonTip() {
+          const bill = parseFloat(this.billAmount) || 0;
+          const pct = parseFloat(this.tipPercent) || 0;
+          const totalTip = bill * pct / 100;
+          const n = this.people;
+          if (this.roundUp && n > 1) {
+            const totalPerPerson = (bill + totalTip) / n;
+            const rounded = Math.ceil(totalPerPerson * 100) / 100;
+            return this.fmt(rounded - bill / n);
+          }
+          return this.fmt(totalTip / n);
+        },
+
+        calcPerPersonTotal() {
+          const bill = parseFloat(this.billAmount) || 0;
+          const pct = parseFloat(this.tipPercent) || 0;
+          const total = bill + bill * pct / 100;
+          const n = this.people;
+          if (this.roundUp && n > 1) {
+            return this.fmt(Math.ceil((total / n) * 100) / 100);
+          }
+          return this.fmt(total / n);
+        },
+
+        calcRoundingDifference() {
+          if (!this.roundUp || this.people <= 1) return '0.00';
+          const bill = parseFloat(this.billAmount) || 0;
+          const pct = parseFloat(this.tipPercent) || 0;
+          const total = bill + bill * pct / 100;
+          const perPersonExact = total / this.people;
+          const perPersonRounded = Math.ceil(perPersonExact * 100) / 100;
+          const diff = perPersonRounded * this.people - total;
+          return this.fmt(Math.max(0, diff));
+        },
+
+        fmt(n) {
+          return n.toFixed(2);
+        }
+      };
+    }
+  </script>
+</body>
+</html>
