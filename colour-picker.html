@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <meta name="description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline, no ads.">
   <meta name="keywords" content="colour picker, color picker, palette generator, WCAG contrast, complementary colours, triadic, analogous">
   <meta property="og:title" content="Colour Picker Utility">
-  <meta property="og:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <meta property="og:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline, no ads.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Colour Picker Utility">
-  <meta name="twitter:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Works offline, no ads.">
+  <meta name="twitter:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline, no ads.">
   <title>Colour Picker Utility</title>
   <meta name="description" content="Colour picker with palette generation and WCAG contrast checking. Works offline.">
   <link rel="manifest" href="manifest.json">
@@ -147,6 +147,32 @@
             <span class="text-lg font-mono font-bold drop-shadow" x-text="baseHex.toUpperCase()"></span>
           </div>
         </div>
+
+        <!-- Extract from Image -->
+        <div class="w-full">
+          <button @click="$refs.imageInput.click()"
+                  class="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-sm flex items-center justify-center gap-2">
+            📷 Extract from Image
+          </button>
+          <input type="file" x-ref="imageInput" accept="image/*" capture="environment" @change="extractFromImage($event)" class="hidden">
+        </div>
+
+        <!-- Extracted Colours -->
+        <div x-show="extractedColours.length > 0" x-transition class="w-full">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Extracted colours — tap to use:</p>
+          <div class="flex gap-1.5 flex-wrap">
+            <template x-for="(c, i) in extractedColours" :key="i">
+              <button @click="applyExtractedColour(i)"
+                      class="w-10 h-10 rounded-lg shadow-sm border-2 transition hover:scale-110"
+                      :style="`background-color: ${c.hex}; border-color: ${i === selectedExtracted ? baseHex : 'transparent'}`"
+                      :title="c.hex">
+              </button>
+            </template>
+          </div>
+        </div>
+
+        <!-- Hidden canvas for image processing -->
+        <canvas x-ref="imageCanvas" class="hidden"></canvas>
 
         <!-- HEX Input -->
         <div class="flex gap-2 w-full">
@@ -486,6 +512,144 @@
             rgb: hslToRgb(c.h, c.s, c.l)
           })), null, 2);
           this.copyToClipboard(json);
+        },
+
+        // Image extraction
+        extractedColours: [],
+        selectedExtracted: -1,
+
+        extractFromImage(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const img = new Image();
+          const reader = new FileReader();
+
+          reader.onload = (e) => {
+            img.onload = () => {
+              const canvas = this.$refs.imageCanvas;
+              const ctx = canvas.getContext('2d');
+
+              // Scale image down for performance
+              const maxDim = 100;
+              const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+              canvas.width = Math.round(img.width * scale);
+              canvas.height = Math.round(img.height * scale);
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+              const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              const pixels = imageData.data;
+
+              // Collect pixel colours (skip transparent)
+              const colours = [];
+              for (let i = 0; i < pixels.length; i += 4) {
+                if (pixels[i + 3] < 128) continue; // skip transparent
+                colours.push({ r: pixels[i], g: pixels[i + 1], b: pixels[i + 2] });
+              }
+
+              // Simple k-means clustering to find dominant colours
+              const k = 5;
+              const dominant = this.kMeansColours(colours, k);
+
+              this.extractedColours = dominant.map(c => {
+                const hex = rgbToHex(c.r, c.g, c.b);
+                const hsl = rgbToHsl(c.r, c.g, c.b);
+                return { hex: hex.toUpperCase(), hsl, rgb: c };
+              });
+
+              // Auto-apply the dominant colour
+              this.applyExtractedColour(0);
+            };
+            img.src = e.target.result;
+          };
+          reader.readAsDataURL(file);
+
+          // Reset input so same file can be selected again
+          event.target.value = '';
+        },
+
+        kMeansColours(pixels, k) {
+          if (pixels.length === 0) return [];
+          if (pixels.length <= k) return pixels;
+
+          // Initialise centroids randomly from pixels
+          const centroids = [];
+          const used = new Set();
+          for (let i = 0; i < k; i++) {
+            let idx;
+            do { idx = Math.floor(Math.random() * pixels.length); } while (used.has(idx) && used.size < pixels.length);
+            used.add(idx);
+            centroids.push({ r: pixels[idx].r, g: pixels[idx].g, b: pixels[idx].b });
+          }
+
+          // Run k-means iterations
+          for (let iter = 0; iter < 10; iter++) {
+            const clusters = Array.from({ length: k }, () => []);
+
+            // Assign each pixel to nearest centroid
+            for (const p of pixels) {
+              let minDist = Infinity;
+              let minIdx = 0;
+              for (let c = 0; c < k; c++) {
+                const dr = p.r - centroids[c].r;
+                const dg = p.g - centroids[c].g;
+                const db = p.b - centroids[c].b;
+                const dist = dr * dr + dg * dg + db * db;
+                if (dist < minDist) {
+                  minDist = dist;
+                  minIdx = c;
+                }
+              }
+              clusters[minIdx].push(p);
+            }
+
+            // Update centroids
+            for (let c = 0; c < k; c++) {
+              if (clusters[c].length === 0) continue;
+              const sum = clusters[c].reduce((acc, p) => ({ r: acc.r + p.r, g: acc.g + p.g, b: acc.b + p.b }), { r: 0, g: 0, b: 0 });
+              centroids[c] = {
+                r: Math.round(sum.r / clusters[c].length),
+                g: Math.round(sum.g / clusters[c].length),
+                b: Math.round(sum.b / clusters[c].length)
+              };
+            }
+          }
+
+          // Sort by cluster size (most dominant first)
+          const clusters = Array.from({ length: k }, () => []);
+          for (const p of pixels) {
+            let minDist = Infinity;
+            let minIdx = 0;
+            for (let c = 0; c < k; c++) {
+              const dr = p.r - centroids[c].r;
+              const dg = p.g - centroids[c].g;
+              const db = p.b - centroids[c].b;
+              const dist = dr * dr + dg * dg + db * db;
+              if (dist < minDist) {
+                minDist = dist;
+                minIdx = c;
+              }
+            }
+            clusters[minIdx].push(p);
+          }
+
+          // Return centroids sorted by cluster size
+          return centroids
+            .map((c, i) => ({ ...c, count: clusters[i].length }))
+            .sort((a, b) => b.count - a.count)
+            .map(({ r, g, b }) => ({ r, g, b }));
+        },
+
+        applyExtractedColour(index) {
+          const c = this.extractedColours[index];
+          if (!c) return;
+          this.selectedExtracted = index;
+          this.hue = c.hsl.h;
+          this.saturation = c.hsl.s;
+          this.lightness = c.hsl.l;
+          this.hexInput = c.hex;
+          this.contrastBg = c.hex;
+          this.checkEdgeCases();
         }
       };
     }
