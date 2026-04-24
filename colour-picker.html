@@ -95,11 +95,11 @@
   </div>
 
   <!-- Main Container -->
-  <div class="max-w-3xl mx-auto px-4 py-6 sm:py-10">
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-3xl md:mx-auto">
 
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
         🎨 Colour Picker
       </h1>
       <button @click="toggleDarkMode()"
@@ -110,7 +110,7 @@
     </div>
 
     <!-- Slider Section + Preview -->
-    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-4 md:gap-6 mb-4 md:mb-6">
 
       <!-- Sliders -->
       <div class="space-y-4">
@@ -140,7 +140,7 @@
 
       <!-- Colour Preview -->
       <div class="flex flex-col items-center gap-3">
-        <div class="w-full h-36 rounded-xl shadow-inner swatch-box"
+        <div class="w-full h-28 md:h-36 rounded-xl shadow-inner swatch-box"
              :style="`background-color: ${baseHex}`">
           <div class="h-full flex items-end justify-center pb-2"
                :style="`color: ${bestText}`">
@@ -208,11 +208,11 @@
 
     <!-- Palette Swatches -->
     <div class="mb-6">
-      <h2 class="text-lg font-semibold mb-3">Generated Palette</h2>
+      <h2 class="text-base md:text-lg font-semibold mb-2 md:mb-3">Generated Palette</h2>
       <div class="grid gap-3" :class="paletteType === 'analogous' || paletteType === 'monochromatic' ? 'grid-cols-5' : (paletteType === 'tetradic' ? 'grid-cols-4' : 'grid-cols-3')">
         <template x-for="(colour, idx) in currentPalette" :key="paletteType + '-' + idx">
           <div class="cursor-pointer group" @click="copyToClipboard(hslToHex(colour.h, colour.s, colour.l).toUpperCase())">
-            <div class="swatch-box rounded-lg h-24 sm:h-28 shadow-md relative overflow-hidden"
+            <div class="swatch-box rounded-lg h-20 sm:h-24 md:h-28 shadow-md relative overflow-hidden"
                  :style="`background-color: hsl(${colour.h}, ${colour.s}%, ${colour.l}%)`">
               <div class="absolute bottom-1.5 left-2 right-2 text-xs font-mono font-bold text-center drop-shadow"
                    :style="`color: ${bestTextColorForHSL(colour.h, colour.s, colour.l)}`"
@@ -227,8 +227,8 @@
     </div>
 
     <!-- Contrast Checker -->
-    <div class="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
-      <h2 class="text-lg font-semibold mb-4">Contrast Checker</h2>
+    <div class="mb-4 md:mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-3 md:p-6">
+      <h2 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Contrast Checker</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <!-- Foreground -->
         <div>
@@ -295,7 +295,7 @@
     </div>
 
     <!-- Copy CSS Variables -->
-    <div class="flex flex-wrap gap-3 mb-8">
+    <div class="flex flex-wrap gap-2 md:gap-3 mb-4 md:mb-8">
       <button @click="copyCssVariables()"
               class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition shadow">
         📋 Copy CSS Variables
