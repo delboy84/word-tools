@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free UK pension & retirement calculator — state pension age, pot projections, drawdown vs annuity, PLSA benchmarks. Works offline.">
+  <meta name="keywords" content="pension calculator, UK pension, state pension age, retirement calculator, drawdown, annuity, SIPP, auto-enrolment">
+  <meta property="og:title" content="Pension Calculator — Word Tools">
+  <meta property="og:description" content="Free UK pension & retirement calculator with projections, state pension age & drawdown vs annuity.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Pension Calculator — Word Tools">
+  <meta name="twitter:description" content="Free UK pension & retirement calculator. Works offline.">
+  <title>Pension Calculator — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="pensionApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">🏖️ Pension Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">UK retirement projections & income</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'projection'" :class="tab === 'projection' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📊 Projection</button>
+      <button @click="tab = 'income'" :class="tab === 'income' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">💰 Income</button>
+      <button @click="tab = 'state'" :class="tab === 'state' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">🏛️ State Pension</button>
+    </div>
+
+    <!-- PROJECTION TAB -->
+    <div x-show="tab === 'projection'" x-transition>
+
+      <!-- Date of Birth -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Date of Birth</label>
+        <input type="date" x-model="dob" @input="calcAll()" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" style="color-scheme: var(--color-scheme, light);">
+      </div>
+
+      <!-- Target Retirement Age -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Target Retirement Age</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="retirementAge" @input="calcAll()" step="1" min="55" max="75" placeholder="67" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+          <span class="text-lg text-gray-400">yrs</span>
+        </div>
+      </div>
+
+      <!-- Current Pension Pot -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Current Pension Pot</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="currentPot" @input="calcAll()" step="1000" min="0" placeholder="50000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <!-- Monthly Contribution -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Monthly Contribution (you + employer)</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="monthlyContribution" @input="calcAll()" step="50" min="0" placeholder="400" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Auto-enrolment: 5% employee + 3% employer on qualifying earnings (£6,240–£50,270)</div>
+      </div>
+
+      <!-- Employer Contribution % -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Employer Contribution %</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="employerPct" @input="calcAll()" step="0.5" min="3" max="20" placeholder="3" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+          <span class="text-lg text-gray-400">%</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Minimum 3% for auto-enrolment</div>
+      </div>
+
+      <!-- Growth & Inflation -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Investment Growth</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="growthRate" @input="calcAll()" step="0.5" min="0" max="15" placeholder="5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+            <span class="text-lg text-gray-400">%</span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Nominal (before inflation)</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Inflation Rate</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="inflationRate" @input="calcAll()" step="0.5" min="0" max="10" placeholder="2.5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+            <span class="text-lg text-gray-400">%</span>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">CPI assumption</div>
+        </div>
+      </div>
+
+      <!-- NI Qualifying Years -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">NI Qualifying Years (to date)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="niYears" @input="calcAll()" step="1" min="0" max="35" placeholder="15" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+          <span class="text-lg text-gray-400">yrs</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">35 years for full State Pension; minimum 10 for any payment</div>
+      </div>
+
+      <!-- Results -->
+      <div x-show="projectedPot > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Projected Pot at Retirement</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(projectedPot)"></div>
+          <div class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">at age <span x-text="retirementAge || 67"></span> (nominal)</div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">In Today's Money</div>
+          <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(projectedPotReal)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">adjusted for inflation at <span x-text="inflationRate || 2.5"></span>%</div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Contributions</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(totalContributions)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Investment Growth</div>
+            <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(totalGrowth)"></div>
+          </div>
+        </div>
+
+        <!-- Growth Chart -->
+        <div x-show="chartData.length > 0" class="mt-4">
+          <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">Pot Growth Over Time</h3>
+          <div class="space-y-1.5">
+            <template x-for="(row, idx) in chartData" :key="idx">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-8 text-right shrink-0" x-text="row.year"></span>
+                <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden flex">
+                  <div class="bar-chart-bar h-full bg-blue-500 dark:bg-cyan-500" :style="'width:' + row.contPct + '%'"></div>
+                  <div class="bar-chart-bar h-full bg-green-500 dark:bg-green-500" :style="'width:' + row.growthPct + '%'"></div>
+                </div>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-20 text-right shrink-0" x-text="'£' + fmtNum(row.total)"></span>
+              </div>
+            </template>
+          </div>
+          <div class="flex items-center gap-4 mt-2 text-xs text-gray-400 dark:text-gray-500">
+            <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-blue-500 dark:bg-cyan-500"></span> Contributions</span>
+            <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded-sm bg-green-500"></span> Growth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projected Income -->
+      <div x-show="projectedPot > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Projected Retirement Income</h2>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Drawdown (4%)</div>
+            <div class="text-lg md:text-xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(drawdownIncome4) + '/yr'"></div>
+          </div>
+          <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annuity (~6%)</div>
+            <div class="text-lg md:text-xl font-bold text-purple-600 dark:text-purple-400" x-text="'£' + fmtNum(annuityIncome) + '/yr'"></div>
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Tax-Free Lump Sum (25%)</div>
+          <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(taxFreeLumpSum)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400" x-show="taxFreeLumpSum > 268275">⚠️ Max £268,275 — excess is taxable</div>
+        </div>
+
+        <!-- State Pension -->
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">State Pension (estimated)</div>
+          <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(statePensionAnnual) + '/yr'"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400">£<span x-text="statePensionWeekly.toFixed(2)"></span>/week · <span x-text="effectiveNIYears"></span> qualifying years · State Pension age: <span x-text="statePensionAge"></span></div>
+        </div>
+
+        <!-- Total + PLSA Comparison -->
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Income (Drawdown + State)</div>
+          <div class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-3" x-text="'£' + fmtNum(drawdownIncome4 + statePensionAnnual) + '/yr'"></div>
+          <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">PLSA Benchmarks (single)</div>
+          <div class="space-y-2">
+            <div>
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-gray-500 dark:text-gray-400">Minimum £14,400/yr</span>
+                <span x-text="drawdownIncome4 + statePensionAnnual >= 14400 ? '✅' : '❌'"></span>
+              </div>
+              <div class="bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full bg-yellow-500" :style="'width:' + Math.min(100, (drawdownIncome4 + statePensionAnnual) / 14400 * 100) + '%'"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-gray-500 dark:text-gray-400">Moderate £31,300/yr</span>
+                <span x-text="drawdownIncome4 + statePensionAnnual >= 31300 ? '✅' : '❌'"></span>
+              </div>
+              <div class="bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full bg-blue-500 dark:bg-cyan-500" :style="'width:' + Math.min(100, (drawdownIncome4 + statePensionAnnual) / 31300 * 100) + '%'"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-0.5">
+                <span class="text-gray-500 dark:text-gray-400">Comfortable £43,100/yr</span>
+                <span x-text="drawdownIncome4 + statePensionAnnual >= 43100 ? '✅' : '❌'"></span>
+              </div>
+              <div class="bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden">
+                <div class="h-full rounded-full bg-green-500" :style="'width:' + Math.min(100, (drawdownIncome4 + statePensionAnnual) / 43100 * 100) + '%'"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RETIREMENT INCOME TAB -->
+    <div x-show="tab === 'income'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Pension Pot at Retirement</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="incomePot" @input="calcIncome()" step="1000" min="0" placeholder="300000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Take 25% tax-free lump sum</label>
+          <button @click="takeLumpSum = !takeLumpSum; calcIncome()" :class="takeLumpSum ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="takeLumpSum ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+        <div x-show="takeLumpSum" class="text-xs text-gray-500 dark:text-gray-400">£<span x-text="fmtNum(incomePot * 0.25)"></span> tax-free, remaining £<span x-text="fmtNum(incomePot * 0.75)"></span> provides income</div>
+      </div>
+
+      <!-- Drawdown vs Annuity Comparison -->
+      <div x-show="incomePot > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Drawdown vs Annuity</h2>
+
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <!-- Drawdown -->
+          <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3">
+            <div class="text-xs font-semibold text-blue-600 dark:text-cyan-400 mb-2">📉 Drawdown</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Income</div>
+            <div class="text-lg font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(ddAnnual)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Monthly</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(ddMonthly)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(ddWeekly)"></div>
+          </div>
+          <!-- Annuity -->
+          <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+            <div class="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-2">📜 Annuity (~6%)</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Income</div>
+            <div class="text-lg font-bold text-purple-600 dark:text-purple-400" x-text="'£' + fmtNum(annAnnual)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Monthly</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(annMonthly)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Weekly</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(annWeekly)"></div>
+          </div>
+        </div>
+
+        <div x-show="takeLumpSum" class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Tax-Free Lump Sum Received</div>
+          <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(incomePot * 0.25)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400" x-show="incomePot * 0.25 > 268275">⚠️ Cap: £268,275 — excess taxed as income</div>
+        </div>
+
+        <div class="text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+          💡 Drawdown: your money stays invested, income can vary. Annuity: guaranteed income for life, but you lose the pot.
+        </div>
+      </div>
+
+      <!-- How Long Pot Lasts -->
+      <div x-show="incomePot > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">How Long Pot Lasts (Drawdown)</h2>
+        <div class="space-y-2">
+          <template x-for="w in withdrawalScenarios" :key="w.label">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-20 shrink-0" x-text="w.label"></span>
+              <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                <div class="bar-chart-bar h-full rounded-full" :class="w.years >= 30 ? 'bg-green-500' : w.years >= 20 ? 'bg-blue-500 dark:bg-cyan-500' : w.years >= 10 ? 'bg-yellow-500' : 'bg-red-500'" :style="'width:' + Math.min(100, w.years / 40 * 100) + '%'"></div>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="w.years >= 40 ? '40+ yrs' : w.years + ' yrs'"></span>
+            </div>
+          </template>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Assumes 5% investment growth on remaining pot. 4% rule = sustainable withdrawal; 3.5% = more conservative.</div>
+      </div>
+    </div>
+
+    <!-- STATE PENSION TAB -->
+    <div x-show="tab === 'state'" x-transition>
+
+      <!-- Date of Birth -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Date of Birth</label>
+        <input type="date" x-model="dob" @input="calcAll()" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none">
+      </div>
+
+      <!-- State Pension Age Result -->
+      <div x-show="statePensionAge > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Your State Pension</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">State Pension Age</div>
+          <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-cyan-400" x-text="statePensionAge"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Reach on: <span x-text="statePensionDate"></span></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Years Until SPA</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="yearsUntilSPA"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Full New State Pension</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100">£230.25/wk</div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">£11,973/yr (2025/26)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NI Years -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">NI Qualifying Years (to date)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="niYears" @input="calcAll()" step="1" min="0" max="50" placeholder="15" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+          <span class="text-lg text-gray-400">yrs</span>
+        </div>
+      </div>
+
+      <!-- Projected NI years at SPA -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Will You Work Until SPA?</label>
+        <div class="flex items-center justify-between">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Yes, continue working</label>
+          <button @click="workUntilSPA = !workUntilSPA; calcAll()" :class="workUntilSPA ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="workUntilSPA ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- State Pension Amount -->
+      <div x-show="niYears > 0 || workUntilSPA" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Your State Pension Estimate</h2>
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Estimated State Pension</div>
+          <div class="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400" x-text="'£' + statePensionWeekly.toFixed(2) + '/wk'"></div>
+          <div class="text-sm font-medium text-gray-900 dark:text-gray-100 mt-1" x-text="'£' + fmtNum(statePensionAnnual) + '/yr'"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Qualifying Years</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="effectiveNIYears + ' / 35'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Years Short of Full</div>
+            <div class="text-lg font-bold" :class="effectiveNIYears >= 35 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'" x-text="Math.max(0, 35 - effectiveNIYears)"></div>
+          </div>
+        </div>
+        <div x-show="effectiveNIYears < 35" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-xs text-gray-700 dark:text-gray-300">
+          ⚠️ You need <span x-text="35 - effectiveNIYears"></span> more qualifying years for the full State Pension. Each missing year reduces your pension by ~£<span x-text="(230.25 / 35).toFixed(2)"></span>/week.
+        </div>
+      </div>
+
+      <!-- Voluntary NICs -->
+      <div x-show="niYears > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Buy Extra Years (Class 3 NICs)</h2>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Years to Buy</label>
+            <input type="number" x-model.number="buyYears" @input="calcAll()" step="1" min="0" :max="Math.max(0, 35 - effectiveNIYears)" class="w-full text-xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="numeric">
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Cost</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(buyYears * 924.00)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400">£17.75/week × 52</div>
+          </div>
+        </div>
+        <div x-show="buyYears > 0" class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Extra Pension from Bought Years</div>
+          <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'£' + (buyYears * 230.25 / 35 * 52).toFixed(2) + '/yr'"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="'£' + (buyYears * 230.25 / 35).toFixed(2) + '/week extra'"></div>
+        </div>
+      </div>
+
+      <!-- Deferral -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Deferring State Pension</h2>
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Defer By (weeks)</div>
+          <input type="number" x-model.number="deferWeeks" @input="calcAll()" step="9" min="0" max="260" class="w-full text-xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="numeric">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">1% increase per 9 weeks deferred (~5.8% per year)</div>
+        </div>
+        <div x-show="deferWeeks >= 9" class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Deferral Increase</div>
+            <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'+' + (deferWeeks / 9).toFixed(1) + '%'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Boosted Pension</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + (statePensionWeekly * (1 + deferWeeks / 9 / 100)).toFixed(2) + '/wk'"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- State Pension Rules -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">State Pension Age Rules (2025/26)</h3>
+        <div class="space-y-1 text-xs text-gray-500 dark:text-gray-400">
+          <div>Born before 6 Apr 1960 → <span class="font-medium text-gray-900 dark:text-gray-100">66</span></div>
+          <div>Born 6 Apr 1960 – 5 Mar 1961 → <span class="font-medium text-gray-900 dark:text-gray-100">66 + transition months</span></div>
+          <div>Born 6 Mar 1961 – 5 Apr 1977 → <span class="font-medium text-gray-900 dark:text-gray-100">67</span></div>
+          <div>Born after 5 Apr 1977 → <span class="font-medium text-gray-900 dark:text-gray-100">68</span></div>
+        </div>
+        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">Triple Lock: increases by highest of CPI, average earnings, or 2.5%</div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+
+    <!-- Financial Disclaimer -->
+    <div class="mt-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-3 md:p-4">
+      <p class="text-xs text-gray-600 dark:text-gray-400"><strong>⚠️ Disclaimer:</strong> This calculator provides estimates only and does not constitute financial advice. Pension values depend on investment performance, charges, tax rules, and legislation — all of which can change. State Pension figures use 2025/26 rates. Annuity rates are indicative. Consult a qualified financial adviser before making pension decisions. Past performance does not guarantee future results.</p>
+    </div>
+  </div>
+
+  <script>
+    function pensionApp() {
+      return {
+        darkMode: false,
+        tab: 'projection',
+
+        // Inputs
+        dob: '',
+        retirementAge: 67,
+        currentPot: null,
+        monthlyContribution: null,
+        employerPct: 3,
+        growthRate: 5,
+        inflationRate: 2.5,
+        niYears: null,
+        workUntilSPA: true,
+
+        // Income tab
+        incomePot: null,
+        takeLumpSum: false,
+
+        // State tab
+        buyYears: 0,
+        deferWeeks: 0,
+
+        // Computed
+        currentAge: 0,
+        projectedPot: 0,
+        projectedPotReal: 0,
+        totalContributions: 0,
+        totalGrowth: 0,
+        chartData: [],
+        drawdownIncome4: 0,
+        annuityIncome: 0,
+        taxFreeLumpSum: 0,
+        statePensionAge: 0,
+        statePensionDate: '',
+        yearsUntilSPA: '',
+        statePensionWeekly: 0,
+        statePensionAnnual: 0,
+        effectiveNIYears: 0,
+
+        // Income tab computed
+        ddAnnual: 0,
+        ddMonthly: 0,
+        ddWeekly: 0,
+        annAnnual: 0,
+        annMonthly: 0,
+        annWeekly: 0,
+        withdrawalScenarios: [],
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          // Set incomePot to match projected pot when switching tabs
+          this.$watch('projectedPot', (val) => {
+            if (val > 0 && (!this.incomePot || this.incomePot === 0)) {
+              this.incomePot = val;
+              this.calcIncome();
+            }
+          });
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0';
+          return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+
+        calcAge(dobStr) {
+          if (!dobStr) return 0;
+          const dob = new Date(dobStr);
+          const now = new Date();
+          let age = now.getFullYear() - dob.getFullYear();
+          const m = now.getMonth() - dob.getMonth();
+          if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) age--;
+          return age;
+        },
+
+        calcSPA(dobStr) {
+          if (!dobStr) return 0;
+          const dob = new Date(dobStr);
+          const y = dob.getFullYear();
+          const m = dob.getMonth(); // 0-indexed
+          const d = dob.getDate();
+
+          // Compare as date value for threshold checks
+          // Thresholds use April = month 3 (0-indexed), March = month 2
+          // Born before 6 April 1960 → 66
+          // Born 6 April 1960 – 5 March 1961 → 66 + transition months
+          // Born 6 March 1961 – 5 April 1977 → 67
+          // Born after 5 April 1977 → 68
+
+          const dateVal = y * 10000 + (m + 1) * 100 + d;
+          const before6Apr1960 = 19600406;
+          const before6Mar1961 = 19610306;
+          const before6Apr1977 = 19770406;
+
+          if (dateVal < before6Apr1960) {
+            return 66;
+          } else if (dateVal < before6Mar1961) {
+            // Transition: calculate months
+            // SPA = 66 + transitional months based on DOB
+            // Simplified: use linear interpolation between 66 and 67
+            const startDate = new Date(1960, 3, 6); // 6 Apr 1960
+            const endDate = new Date(1961, 2, 6);   // 6 Mar 1961
+            const frac = (dob - startDate) / (endDate - startDate);
+            const months = Math.ceil(frac * 11);
+            return 66 + 'y ' + months + 'm';
+          } else if (dateVal < before6Apr1977) {
+            return 67;
+          } else {
+            return 68;
+          }
+        },
+
+        calcSPADate(dobStr, spa) {
+          if (!dobStr || !spa) return '';
+          const dob = new Date(dobStr);
+          if (typeof spa === 'string') {
+            // e.g. "66y 3m" — parse
+            const match = spa.match(/(\d+)y\s*(\d+)m/);
+            if (match) {
+              const years = parseInt(match[1]) + parseInt(match[2]) / 12;
+              const spaDate = new Date(dob.getFullYear() + Math.floor(years), dob.getMonth() + Math.round((years % 1) * 12), dob.getDate());
+              return spaDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+            }
+          }
+          const spaDate = new Date(dob.getFullYear() + spa, dob.getMonth(), dob.getDate());
+          return spaDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+        },
+
+        calcAll() {
+          this.currentAge = this.calcAge(this.dob);
+          const spa = this.calcSPA(this.dob);
+          this.statePensionAge = spa;
+          this.statePensionDate = this.calcSPADate(this.dob, spa);
+
+          // Years until SPA
+          if (this.dob && spa) {
+            const spaYears = typeof spa === 'string' ? 66 + 6 / 12 : spa; // approximate for transition
+            const yearsLeft = spaYears - this.currentAge;
+            this.yearsUntilSPA = yearsLeft > 0 ? yearsLeft.toFixed(1) + ' yrs' : 'Already reached';
+          }
+
+          // Effective NI years
+          const baseNI = parseInt(this.niYears) || 0;
+          if (this.workUntilSPA && this.dob) {
+            const spaYears = typeof spa === 'string' ? 66.5 : spa;
+            const yearsToSPA = Math.max(0, spaYears - this.currentAge);
+            this.effectiveNIYears = Math.min(35, baseNI + Math.round(yearsToSPA));
+          } else {
+            this.effectiveNIYears = Math.min(35, baseNI);
+          }
+
+          // State pension amount
+          const fullWeekly = 230.25;
+          const yearsForFull = 35;
+          const minYears = 10;
+          if (this.effectiveNIYears >= yearsForFull) {
+            this.statePensionWeekly = fullWeekly;
+          } else if (this.effectiveNIYears >= minYears) {
+            this.statePensionWeekly = fullWeekly * (this.effectiveNIYears / yearsForFull);
+          } else {
+            this.statePensionWeekly = 0;
+          }
+          // Apply deferral
+          if (this.deferWeeks >= 9) {
+            this.statePensionWeekly = this.statePensionWeekly * (1 + this.deferWeeks / 9 / 100);
+          }
+          this.statePensionAnnual = this.statePensionWeekly * 52;
+
+          // Pension pot projection
+          const pot = parseFloat(this.currentPot) || 0;
+          const monthly = parseFloat(this.monthlyContribution) || 0;
+          const rate = parseFloat(this.growthRate) || 5;
+          const inf = parseFloat(this.inflationRate) || 2.5;
+          const retAge = parseInt(this.retirementAge) || 67;
+          const age = this.currentAge || 0;
+          const yearsToRetire = Math.max(0, retAge - age);
+
+          if (yearsToRetire <= 0 || (pot <= 0 && monthly <= 0)) {
+            this.projectedPot = pot;
+            this.projectedPotReal = pot;
+            this.totalContributions = 0;
+            this.totalGrowth = 0;
+            this.chartData = [];
+            this.drawdownIncome4 = pot * 0.04;
+            this.annuityIncome = pot * 0.06;
+            this.taxFreeLumpSum = pot * 0.25;
+            return;
+          }
+
+          const monthlyRate = rate / 100 / 12;
+          const infMonthly = inf / 100 / 12;
+          let balance = pot;
+          let totalCont = pot;
+          const years = [];
+          const step = yearsToRetire <= 10 ? 1 : Math.ceil(yearsToRetire / 10);
+
+          for (let year = 1; year <= yearsToRetire; year++) {
+            for (let month = 0; month < 12; month++) {
+              balance = balance * (1 + monthlyRate) + monthly;
+              totalCont += monthly;
+            }
+            if (year % step === 0 || year === yearsToRetire) {
+              const growthSoFar = balance - totalCont;
+              const maxVal = balance;
+              years.push({
+                year: age + year,
+                total: balance,
+                contributions: totalCont,
+                growth: growthSoFar,
+                contPct: maxVal > 0 ? (totalCont / maxVal * 100) : 0,
+                growthPct: maxVal > 0 ? (Math.max(0, growthSoFar) / maxVal * 100) : 0
+              });
+            }
+          }
+
+          this.projectedPot = balance;
+          this.totalContributions = totalCont;
+          this.totalGrowth = Math.max(0, balance - totalCont);
+          this.chartData = years;
+
+          // Real terms
+          const realRate = (1 + rate / 100) / (1 + inf / 100) - 1;
+          let realBalance = pot;
+          for (let year = 0; year < yearsToRetire; year++) {
+            realBalance = realBalance * (1 + realRate) + monthly * 12;
+          }
+          this.projectedPotReal = realBalance;
+
+          // Income projections
+          this.drawdownIncome4 = balance * 0.04;
+          this.annuityIncome = balance * 0.06;
+          this.taxFreeLumpSum = balance * 0.25;
+
+          // Update income tab if not manually set
+          if (!this.incomePot || this.incomePot === 0) {
+            this.incomePot = Math.round(balance);
+            this.calcIncome();
+          }
+        },
+
+        calcIncome() {
+          const pot = parseFloat(this.incomePot) || 0;
+          const effectivePot = this.takeLumpSum ? pot * 0.75 : pot;
+
+          // Drawdown at 4%
+          this.ddAnnual = effectivePot * 0.04;
+          this.ddMonthly = this.ddAnnual / 12;
+          this.ddWeekly = this.ddAnnual / 52;
+
+          // Annuity at ~6%
+          this.annAnnual = effectivePot * 0.06;
+          this.annMonthly = this.annAnnual / 12;
+          this.annWeekly = this.annAnnual / 52;
+
+          // Withdrawal scenarios
+          const scenarios = [
+            { label: '3.5% (conservative)', pct: 0.035 },
+            { label: '4.0% (standard)', pct: 0.04 },
+            { label: '5.0%', pct: 0.05 },
+            { label: '6.0%', pct: 0.06 },
+            { label: '8.0%', pct: 0.08 }
+          ];
+          this.withdrawalScenarios = scenarios.map(s => {
+            const annualWithdraw = effectivePot * s.pct;
+            const growthRate = 0.05;
+            let balance = effectivePot;
+            let years = 0;
+            while (balance > 0 && years < 40) {
+              const growth = balance * growthRate;
+              balance = balance + growth - annualWithdraw;
+              if (balance < 0) break;
+              years++;
+            }
+            return { label: s.label, years: years, pct: s.pct };
+          });
+        }
+      };
+    }
+  </script>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+    </div>
+</body>
+</html>
