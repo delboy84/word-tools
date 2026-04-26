@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free compound interest and savings calculator — lump sum, monthly contributions, goal-based savings, inflation-adjusted returns. Works offline.">
+  <meta name="keywords" content="savings calculator, compound interest, monthly savings, goal calculator, inflation adjusted, ISA calculator">
+  <meta property="og:title" content="Savings Calculator — Word Tools">
+  <meta property="og:description" content="Free compound interest and savings calculator with goal mode and inflation adjustment. Works offline.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Savings Calculator — Word Tools">
+  <meta name="twitter:description" content="Free savings and compound interest calculator. Works offline.">
+  <title>Savings Calculator — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="savingsApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">📈 Savings Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Compound interest & goals</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+      <button @click="tab = 'savings'" :class="tab === 'savings' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-3 rounded-md text-xs md:text-sm font-medium transition">💰 Savings</button>
+      <button @click="tab = 'goal'" :class="tab === 'goal' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-3 rounded-md text-xs md:text-sm font-medium transition">🎯 Goal</button>
+    </div>
+
+    <!-- SAVINGS TAB -->
+    <div x-show="tab === 'savings'" x-transition>
+      <!-- Lump Sum -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Initial Lump Sum</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="lumpSum" @input="calcSavings()" step="100" min="0" placeholder="5000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <!-- Monthly Contribution -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Monthly Contribution</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="monthlyContrib" @input="calcSavings()" step="50" min="0" placeholder="200" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <!-- Interest Rate & Term -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Interest Rate</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="savingsRate" @input="calcSavings()" step="0.1" min="0" placeholder="5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+            <span class="text-lg text-gray-400">%</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Time Period</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="savingsYears" @input="calcSavings()" step="1" min="1" max="50" placeholder="10" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+            <span class="text-lg text-gray-400">yrs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compound Frequency -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Compound Frequency</label>
+        <div class="flex gap-2">
+          <button @click="compoundFreq = 'monthly'; calcSavings()" :class="compoundFreq === 'monthly' ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition">Monthly</button>
+          <button @click="compoundFreq = 'quarterly'; calcSavings()" :class="compoundFreq === 'quarterly' ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition">Quarterly</button>
+          <button @click="compoundFreq = 'annually'; calcSavings()" :class="compoundFreq === 'annually' ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition">Annually</button>
+        </div>
+      </div>
+
+      <!-- Inflation Toggle -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Adjust for inflation</label>
+          <button @click="adjustInflation = !adjustInflation; calcSavings()" :class="adjustInflation ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="adjustInflation ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+        <div x-show="adjustInflation" x-transition>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Inflation Rate (%)</label>
+          <input type="number" x-model.number="inflationRate" @input="calcSavings()" step="0.1" min="0" placeholder="2.5" class="w-24 text-center text-lg font-semibold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+        </div>
+      </div>
+
+      <!-- Savings Results -->
+      <div x-show="finalBalance > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Summary</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Final Balance</div>
+          <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(finalBalance)"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Contributed</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(totalContributed)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Interest Earned</div>
+            <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(interestEarned)"></div>
+          </div>
+        </div>
+        <div x-show="adjustInflation && realBalance > 0" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Inflation-Adjusted Value</div>
+          <div class="text-lg md:text-xl font-bold text-yellow-600 dark:text-yellow-400" x-text="'£' + fmtNum(realBalance)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">In today's money</div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Contribution vs Interest</div>
+          <div class="flex rounded-full overflow-hidden h-5 bg-gray-200 dark:bg-gray-600">
+            <div class="bg-blue-500 dark:bg-cyan-500 bar-chart-bar" :style="'width:' + contribPct + '%'"></div>
+            <div class="bg-green-500 dark:bg-green-500 bar-chart-bar" :style="'width:' + (100 - contribPct) + '%'"></div>
+          </div>
+          <div class="flex justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <span class="text-blue-600 dark:text-cyan-400" x-text="contribPct.toFixed(1) + '% contributed'"></span>
+            <span class="text-green-600 dark:text-green-400" x-text="(100 - contribPct).toFixed(1) + '% interest'"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Growth Chart -->
+      <div x-show="finalBalance > 0 && yearlyData.length > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Growth Over Time</h2>
+        <div class="space-y-1.5">
+          <template x-for="(row, idx) in chartData" :key="idx">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-8 text-right shrink-0" x-text="row.year"></span>
+                <div class="flex-1 flex rounded-full overflow-hidden h-3 bg-gray-100 dark:bg-gray-700">
+                  <div class="bg-blue-500 dark:bg-cyan-500 bar-chart-bar" :style="'width:' + row.contribPct + '%'"></div>
+                  <div class="bg-green-500 dark:bg-green-400 bar-chart-bar" :style="'width:' + row.interestPct + '%'"></div>
+                </div>
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum(row.balance)"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="flex justify-between mt-2 text-xs text-gray-400 dark:text-gray-500">
+          <span>Year 1</span>
+          <span x-text="'Year ' + savingsYears"></span>
+        </div>
+        <div class="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-blue-500 dark:bg-cyan-500 inline-block"></span> Contributions</span>
+          <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-sm bg-green-500 dark:bg-green-400 inline-block"></span> Interest</span>
+        </div>
+      </div>
+
+      <!-- Year Breakdown -->
+      <div x-show="finalBalance > 0 && showYearBreakdown" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100">Year-by-Year Breakdown</h2>
+          <button @click="showYearBreakdown = false" class="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">Hide</button>
+        </div>
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Year</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Contributed</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Interest</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Balance</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="row in yearlyData" :key="row.year">
+                <tr class="border-b border-gray-100 dark:border-gray-700">
+                  <td class="py-1.5 text-gray-900 dark:text-gray-100" x-text="row.year"></td>
+                  <td class="py-1.5 text-right text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(row.totalContrib)"></td>
+                  <td class="py-1.5 text-right text-green-600 dark:text-green-400" x-text="'£' + fmtNum(row.totalInterest)"></td>
+                  <td class="py-1.5 text-right font-medium text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(row.balance)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div x-show="finalBalance > 0 && !showYearBreakdown" class="mb-3 md:mb-4">
+        <button @click="showYearBreakdown = true" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">Show year-by-year breakdown</button>
+      </div>
+    </div>
+
+    <!-- GOAL TAB -->
+    <div x-show="tab === 'goal'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Savings Goal</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="goalTarget" @input="calcGoal()" step="1000" min="0" placeholder="50000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Initial Lump Sum</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="goalLumpSum" @input="calcGoal()" step="100" min="0" placeholder="5000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Interest Rate</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="goalRate" @input="calcGoal()" step="0.1" min="0" placeholder="5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+            <span class="text-lg text-gray-400">%</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Time Period</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="goalYears" @input="calcGoal()" step="1" min="1" max="50" placeholder="10" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+            <span class="text-lg text-gray-400">yrs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal Results -->
+      <div x-show="goalMonthly > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">To Reach Your Goal</h2>
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Monthly Saving Needed</div>
+          <div class="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(goalMonthly)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">per month for <span x-text="goalYears"></span> years</div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Contributed</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(goalTotalContrib)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Interest Earned</div>
+            <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(goalTotalInterest)"></div>
+          </div>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+          💡 Assumes monthly compounding. Actual returns may vary — past performance doesn't guarantee future results.
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script>
+    function savingsApp() {
+      return {
+        darkMode: false,
+        tab: 'savings',
+        // Savings inputs
+        lumpSum: null,
+        monthlyContrib: null,
+        savingsRate: null,
+        savingsYears: null,
+        compoundFreq: 'monthly',
+        adjustInflation: false,
+        inflationRate: 2.5,
+        showYearBreakdown: false,
+        // Goal inputs
+        goalTarget: null,
+        goalLumpSum: null,
+        goalRate: null,
+        goalYears: null,
+        // Results
+        finalBalance: 0,
+        totalContributed: 0,
+        interestEarned: 0,
+        realBalance: 0,
+        contribPct: 50,
+        yearlyData: [],
+        chartData: [],
+        goalMonthly: 0,
+        goalTotalContrib: 0,
+        goalTotalInterest: 0,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0.00';
+          return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+
+        getCompoundPeriodsPerYear() {
+          switch (this.compoundFreq) {
+            case 'monthly': return 12;
+            case 'quarterly': return 4;
+            case 'annually': return 1;
+            default: return 12;
+          }
+        },
+
+        calcSavings() {
+          const P = parseFloat(this.lumpSum) || 0; // initial lump sum
+          const PMT = parseFloat(this.monthlyContrib) || 0; // monthly contribution
+          const r = parseFloat(this.savingsRate) || 0; // annual rate %
+          const t = parseInt(this.savingsYears) || 0;
+          const n = this.getCompoundPeriodsPerYear();
+          const annualRate = r / 100;
+
+          if (t <= 0) {
+            this.finalBalance = 0;
+            this.totalContributed = 0;
+            this.interestEarned = 0;
+            this.realBalance = 0;
+            this.yearlyData = [];
+            this.chartData = [];
+            return;
+          }
+
+          // Build year-by-year data
+          const yearly = [];
+          let balance = P;
+          const monthlyRate = annualRate / 12; // always compound monthly for monthly contributions
+          const compPeriods = n;
+
+          for (let year = 1; year <= t; year++) {
+            let yearStartBalance = balance;
+            // For each month of the year
+            for (let m = 0; m < 12; m++) {
+              balance += PMT; // add monthly contribution at start of month
+              // Apply interest based on compounding frequency
+              if (n === 12) {
+                balance *= (1 + monthlyRate);
+              } else if (n === 4 && (m + 1) % 3 === 0) {
+                // Quarterly: apply 3 months of interest
+                balance *= (1 + monthlyRate * 3);
+              } else if (n === 1 && m === 11) {
+                // Annually: apply 12 months of interest
+                balance *= (1 + annualRate);
+              }
+            }
+            const totalContrib = P + PMT * 12 * year;
+            const totalInterest = balance - totalContrib;
+            yearly.push({
+              year: year,
+              totalContrib: totalContrib,
+              totalInterest: totalInterest,
+              balance: balance
+            });
+          }
+
+          this.yearlyData = yearly;
+          this.finalBalance = balance;
+          this.totalContributed = P + PMT * 12 * t;
+          this.interestEarned = balance - this.totalContributed;
+          this.contribPct = this.finalBalance > 0 ? (this.totalContributed / this.finalBalance * 100) : 50;
+
+          // Inflation-adjusted value
+          if (this.adjustInflation) {
+            const infRate = parseFloat(this.inflationRate) || 0;
+            this.realBalance = this.finalBalance / Math.pow(1 + infRate / 100, t);
+          } else {
+            this.realBalance = 0;
+          }
+
+          // Build chart data (sample for long terms)
+          const maxBalance = this.finalBalance || 1;
+          const step = yearly.length <= 10 ? 1 : Math.ceil(yearly.length / 10);
+          this.chartData = [];
+          for (let i = 0; i < yearly.length; i += step) {
+            const row = yearly[i];
+            const totalContrib = row.totalContrib;
+            const totalInterest = row.totalInterest;
+            const bal = row.balance;
+            this.chartData.push({
+              year: row.year,
+              balance: bal,
+              contribPct: bal > 0 ? (totalContrib / maxBalance * 100) : 0,
+              interestPct: bal > 0 ? (totalInterest / maxBalance * 100) : 0
+            });
+          }
+          // Always include the last year
+          if (yearly.length > 0 && this.chartData.length > 0 && this.chartData[this.chartData.length - 1].year !== yearly[yearly.length - 1].year) {
+            const last = yearly[yearly.length - 1];
+            this.chartData.push({
+              year: last.year,
+              balance: last.balance,
+              contribPct: last.totalContrib / maxBalance * 100,
+              interestPct: last.totalInterest / maxBalance * 100
+            });
+          }
+        },
+
+        calcGoal() {
+          const target = parseFloat(this.goalTarget) || 0;
+          const P = parseFloat(this.goalLumpSum) || 0;
+          const r = parseFloat(this.goalRate) || 0;
+          const t = parseInt(this.goalYears) || 0;
+
+          if (target <= 0 || t <= 0) {
+            this.goalMonthly = 0;
+            this.goalTotalContrib = 0;
+            this.goalTotalInterest = 0;
+            return;
+          }
+
+          const annualRate = r / 100;
+          const monthlyRate = annualRate / 12;
+          const n = t * 12;
+
+          // Future value of lump sum
+          const fvLump = P * Math.pow(1 + monthlyRate, n);
+
+          // We need: fvLump + PMT * [((1+r)^n - 1) / r] = target
+          // PMT = (target - fvLump) / [((1+r)^n - 1) / r]
+          const remaining = target - fvLump;
+
+          if (remaining <= 0) {
+            // Lump sum already exceeds or meets target
+            this.goalMonthly = 0;
+            this.goalTotalContrib = P;
+            this.goalTotalInterest = target - P;
+            return;
+          }
+
+          if (r <= 0) {
+            // No interest, simple division
+            this.goalMonthly = remaining / n;
+          } else {
+            const factor = (Math.pow(1 + monthlyRate, n) - 1) / monthlyRate;
+            this.goalMonthly = remaining / factor;
+          }
+
+          this.goalTotalContrib = P + this.goalMonthly * n;
+          this.goalTotalInterest = target - this.goalTotalContrib;
+        }
+      };
+    }
+  </script>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+    </div>
+</body>
+</html>

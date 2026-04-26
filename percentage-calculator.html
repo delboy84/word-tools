@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free percentage calculator — percentage of a number, increase/decrease, reverse percentages, VAT calculator. Works offline.">
+  <meta name="keywords" content="percentage calculator, percentage of number, percentage increase, VAT calculator, reverse percentage">
+  <meta property="og:title" content="Percentage Calculator — Word Tools">
+  <meta property="og:description" content="Free percentage calculator — percentage of a number, increase/decrease, reverse percentages. Works offline.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Percentage Calculator — Word Tools">
+  <meta name="twitter:description" content="Free percentage calculator. Works offline.">
+  <title>Percentage Calculator — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="percentApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">📊 Percentage Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Quick percentage calculations</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'of'" :class="tab === 'of' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">% of Number</button>
+      <button @click="tab = 'change'" :class="tab === 'change' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">Increase/Decrease</button>
+      <button @click="tab = 'iswhat'" :class="tab === 'iswhat' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">X is ?% of Y</button>
+      <button @click="tab = 'reverse'" :class="tab === 'reverse' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">Reverse %</button>
+    </div>
+
+    <!-- % OF A NUMBER TAB -->
+    <div x-show="tab === 'of'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">What is <span class="text-blue-600 dark:text-cyan-400">X%</span> of <span class="text-blue-600 dark:text-cyan-400">Y</span>?</h2>
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="text-sm text-gray-500 dark:text-gray-400">What is</span>
+          <input type="number" x-model.number="ofPercent" @input="calcOf()" step="0.1" placeholder="20" class="w-20 text-center text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          <span class="text-xl font-bold text-gray-500 dark:text-gray-400">% of</span>
+          <div class="flex items-center gap-1">
+            <span class="text-lg text-gray-400">£</span>
+            <input type="number" x-model.number="ofNumber" @input="calcOf()" step="0.01" placeholder="150" class="w-32 text-center text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          </div>
+          <span class="text-xl text-gray-400">?</span>
+        </div>
+        <div x-show="ofResult !== null" class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Result</div>
+          <div class="text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(ofResult)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="ofPercent + '% of £' + fmtNum(ofNumber) + ' = £' + fmtNum(ofResult)"></div>
+        </div>
+      </div>
+
+      <!-- Quick VAT -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick VAT</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Amount (£)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="vatAmount" @input="calcVat()" placeholder="100" class="w-full text-lg font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">VAT Rate</label>
+            <div class="flex gap-2 mb-1">
+              <button @click="vatRate = 20; calcVat()" :class="vatRate === 20 ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-3 py-1 rounded-lg text-xs font-medium transition">20%</button>
+              <button @click="vatRate = 5; calcVat()" :class="vatRate === 5 ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-3 py-1 rounded-lg text-xs font-medium transition">5%</button>
+              <button @click="vatRate = 0; calcVat()" :class="vatRate === 0 ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-3 py-1 rounded-lg text-xs font-medium transition">0%</button>
+            </div>
+          </div>
+        </div>
+        <div x-show="vatResult !== null" class="mt-3 grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">VAT</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(vatVat)"></div>
+          </div>
+          <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Inc. VAT</div>
+            <div class="text-lg font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(vatResult)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCREASE/DECREASE TAB -->
+    <div x-show="tab === 'change'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Percentage Change</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">From <span class="text-blue-600 dark:text-cyan-400">£X</span> to <span class="text-blue-600 dark:text-cyan-400">£Y</span>, what's the % change?</p>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">From (£)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="changeFrom" @input="calcChange()" placeholder="100" class="w-full text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">To (£)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="changeTo" @input="calcChange()" placeholder="120" class="w-full text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+            </div>
+          </div>
+        </div>
+        <div x-show="changeResult !== null" class="rounded-lg p-3 md:p-4" :class="changeResult >= 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1" x-text="changeResult >= 0 ? 'Increase' : 'Decrease'"></div>
+          <div class="text-3xl font-bold" :class="changeResult >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'" x-text="(changeResult >= 0 ? '+' : '') + changeResult.toFixed(2) + '%'"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="'£' + fmtNum(changeFrom) + ' → £' + fmtNum(changeTo) + ' (' + (changeResult >= 0 ? '+' : '') + '£' + fmtNum(Math.abs(changeTo - changeFrom)) + ')'"></div>
+        </div>
+      </div>
+
+      <!-- Apply % change -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Apply Percentage Change</h2>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Amount (£)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="applyAmount" @input="calcApply()" placeholder="100" class="w-full text-lg font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Change (%)</label>
+            <input type="number" x-model.number="applyPercent" @input="calcApply()" step="0.1" placeholder="20" class="w-full text-lg font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-2 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Direction</label>
+            <div class="flex gap-1">
+              <button @click="applyDirection = 'increase'; calcApply()" :class="applyDirection === 'increase' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="flex-1 py-2 rounded-lg text-xs font-medium transition">↑ +</button>
+              <button @click="applyDirection = 'decrease'; calcApply()" :class="applyDirection === 'decrease' ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="flex-1 py-2 rounded-lg text-xs font-medium transition">↓ −</button>
+            </div>
+          </div>
+        </div>
+        <div x-show="applyResult !== null" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">New Amount</div>
+          <div class="text-2xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(applyResult)"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- X IS WHAT % OF Y TAB -->
+    <div x-show="tab === 'iswhat'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3"><span class="text-blue-600 dark:text-cyan-400">X</span> is what % of <span class="text-blue-600 dark:text-cyan-400">Y</span>?</h2>
+        <div class="flex flex-wrap items-center gap-2 mb-4">
+          <span class="text-sm text-gray-500 dark:text-gray-400">£</span>
+          <input type="number" x-model.number="isWhatX" @input="calcIsWhat()" placeholder="30" class="w-24 text-center text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          <span class="text-sm text-gray-500 dark:text-gray-400">is what % of</span>
+          <span class="text-lg text-gray-400">£</span>
+          <input type="number" x-model.number="isWhatY" @input="calcIsWhat()" placeholder="150" class="w-24 text-center text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          <span class="text-xl text-gray-400">?</span>
+        </div>
+        <div x-show="isWhatResult !== null" class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Result</div>
+          <div class="text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="isWhatResult.toFixed(2) + '%'"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="'£' + fmtNum(isWhatX) + ' is ' + isWhatResult.toFixed(2) + '% of £' + fmtNum(isWhatY)"></div>
+        </div>
+      </div>
+
+      <!-- Fraction to % -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Common Fractions → %</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <template x-for="f in commonFractions" :key="f.label">
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2 flex justify-between">
+              <span class="text-sm text-gray-700 dark:text-gray-300" x-text="f.label"></span>
+              <span class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="f.pct + '%'"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVERSE % TAB -->
+    <div x-show="tab === 'reverse'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Reverse Percentage</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">If £Y includes X%, what was the original amount?</p>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Amount including % (£)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="reverseAmount" @input="calcReverse()" placeholder="120" class="w-full text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Included %</label>
+            <div class="flex items-center gap-1">
+              <input type="number" x-model.number="reversePercent" @input="calcReverse()" step="0.1" placeholder="20" class="w-full text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+              <span class="text-lg text-gray-400">%</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 mb-4">
+          <button @click="reverseMode = 'add'" :class="reverseMode === 'add' ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition">Amount includes +X%</button>
+          <button @click="reverseMode = 'sub'" :class="reverseMode === 'sub' ? 'bg-blue-600 text-white dark:bg-cyan-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition">Amount includes −X%</button>
+        </div>
+        <div x-show="reverseResult !== null" class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Original Amount</div>
+          <div class="text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(reverseResult)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="'£' + fmtNum(reverseResult) + (reverseMode === 'add' ? ' + ' : ' − ') + reversePercent + '% = £' + fmtNum(reverseAmount)"></div>
+        </div>
+      </div>
+
+      <!-- Quick reverse VAT -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Quick: Remove VAT from Price</h2>
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-sm text-gray-400">£</span>
+          <input type="number" x-model.number="reverseVatAmount" @input="calcReverseVat()" placeholder="120" class="flex-1 text-xl font-bold bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal">
+          <span class="text-sm text-gray-500 dark:text-gray-400">inc. VAT</span>
+        </div>
+        <div x-show="reverseVatResult !== null" class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">Excl. VAT</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(reverseVatResult)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400">VAT (20%)</div>
+            <div class="text-lg font-bold text-red-500 dark:text-red-400" x-text="'£' + fmtNum(reverseVatVat)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script>
+    function percentApp() {
+      return {
+        darkMode: false,
+        tab: 'of',
+        // % of number
+        ofPercent: null,
+        ofNumber: null,
+        ofResult: null,
+        // VAT
+        vatAmount: null,
+        vatRate: 20,
+        vatResult: null,
+        vatVat: null,
+        // % change
+        changeFrom: null,
+        changeTo: null,
+        changeResult: null,
+        // Apply % change
+        applyAmount: null,
+        applyPercent: null,
+        applyDirection: 'increase',
+        applyResult: null,
+        // X is what % of Y
+        isWhatX: null,
+        isWhatY: null,
+        isWhatResult: null,
+        // Reverse %
+        reverseAmount: null,
+        reversePercent: null,
+        reverseMode: 'add',
+        reverseResult: null,
+        // Reverse VAT
+        reverseVatAmount: null,
+        reverseVatResult: null,
+        reverseVatVat: null,
+
+        commonFractions: [
+          { label: '1/2', pct: 50 },
+          { label: '1/3', pct: 33.33 },
+          { label: '1/4', pct: 25 },
+          { label: '1/5', pct: 20 },
+          { label: '1/6', pct: 16.67 },
+          { label: '1/8', pct: 12.5 },
+          { label: '1/10', pct: 10 },
+          { label: '2/3', pct: 66.67 },
+          { label: '3/4', pct: 75 },
+          { label: '3/5', pct: 60 }
+        ],
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0.00';
+          return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+
+        calcOf() {
+          const pct = parseFloat(this.ofPercent);
+          const num = parseFloat(this.ofNumber);
+          if (isNaN(pct) || isNaN(num)) { this.ofResult = null; return; }
+          this.ofResult = num * pct / 100;
+        },
+
+        calcVat() {
+          const amount = parseFloat(this.vatAmount);
+          if (isNaN(amount)) { this.vatResult = null; this.vatVat = null; return; }
+          this.vatVat = amount * this.vatRate / 100;
+          this.vatResult = amount + this.vatVat;
+        },
+
+        calcChange() {
+          const from = parseFloat(this.changeFrom);
+          const to = parseFloat(this.changeTo);
+          if (isNaN(from) || isNaN(to) || from === 0) { this.changeResult = null; return; }
+          this.changeResult = ((to - from) / Math.abs(from)) * 100;
+        },
+
+        calcApply() {
+          const amount = parseFloat(this.applyAmount);
+          const pct = parseFloat(this.applyPercent);
+          if (isNaN(amount) || isNaN(pct)) { this.applyResult = null; return; }
+          if (this.applyDirection === 'increase') {
+            this.applyResult = amount * (1 + pct / 100);
+          } else {
+            this.applyResult = amount * (1 - pct / 100);
+          }
+        },
+
+        calcIsWhat() {
+          const x = parseFloat(this.isWhatX);
+          const y = parseFloat(this.isWhatY);
+          if (isNaN(x) || isNaN(y) || y === 0) { this.isWhatResult = null; return; }
+          this.isWhatResult = (x / y) * 100;
+        },
+
+        calcReverse() {
+          const amount = parseFloat(this.reverseAmount);
+          const pct = parseFloat(this.reversePercent);
+          if (isNaN(amount) || isNaN(pct)) { this.reverseResult = null; return; }
+          if (this.reverseMode === 'add') {
+            // Amount = original * (1 + pct/100)
+            this.reverseResult = amount / (1 + pct / 100);
+          } else {
+            // Amount = original * (1 - pct/100)
+            this.reverseResult = amount / (1 - pct / 100);
+          }
+        },
+
+        calcReverseVat() {
+          const amount = parseFloat(this.reverseVatAmount);
+          if (isNaN(amount)) { this.reverseVatResult = null; this.reverseVatVat = null; return; }
+          // 20% VAT: amount / 1.2 = excl VAT
+          this.reverseVatResult = amount / 1.2;
+          this.reverseVatVat = amount - this.reverseVatResult;
+        }
+      };
+    }
+  </script>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+    </div>
+</body>
+</html>

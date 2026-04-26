@@ -5,15 +5,15 @@
      crossorigin="anonymous"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Word Tools — Free Online Word Puzzle Solvers & Colour Picker</title>
-  <meta name="description" content="Free offline-capable word puzzle solvers and colour picker. Crossword solver, anagram finder, Wordle helper, Scrabble word finder, and colour palette generator. No tracking.">
+  <title>Word Tools — Free Online Calculators, Word Puzzle Solvers & Colour Picker</title>
+  <meta name="description" content="Free offline-capable calculators, word puzzle solvers and colour picker. Mortgage, percentage, savings calculators, crossword solver, anagram finder, Wordle helper, Scrabble word finder. No tracking.">
   <meta name="keywords" content="crossword solver, anagram solver, wordle helper, scrabble word finder, colour picker, palette generator, word puzzle, word tools">
-  <meta property="og:title" content="Word Tools — Free Online Word Puzzle Solvers & Colour Picker">
-  <meta property="og:description" content="Free offline-capable word puzzle solvers and colour picker. No tracking.">
+  <meta property="og:title" content="Word Tools — Free Online Calculators, Word Puzzle Solvers & Colour Picker">
+  <meta property="og:description" content="Free offline-capable calculators, word puzzle solvers and colour picker. No tracking.">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Word Tools — Free Online Puzzle Solvers & Colour Picker">
-  <meta name="twitter:description" content="Free offline-capable word puzzle solvers and colour palette generator. No tracking.">
+  <meta name="twitter:title" content="Word Tools — Free Online Calculators, Puzzle Solvers & Colour Picker">
+  <meta name="twitter:description" content="Free offline-capable calculators, word puzzle solvers and colour palette generator. No tracking.">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = { darkMode: 'class' };
@@ -35,6 +35,20 @@
         <span x-show="darkMode" class="text-xl">☀️</span>
         <span x-show="!darkMode" class="text-xl">🌙</span>
       </button>
+    </div>
+
+    <!-- Calculators Section -->
+    <h2 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Calculators</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-8">
+      <template x-for="card in calcCards" :key="card.href">
+        <a :href="card.href" class="flex items-center gap-3 p-4 md:p-6 md:block bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition group">
+          <div class="text-2xl md:text-3xl md:mb-3 shrink-0" x-text="card.icon"></div>
+          <div>
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" x-text="card.title"></h3>
+            <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 md:mt-1" x-text="card.desc"></p>
+          </div>
+        </a>
+      </template>
     </div>
 
     <!-- Word Tools Section -->
@@ -80,6 +94,11 @@
           { href: 'anagram.html', icon: '🔄', title: 'Anagram Solver', desc: 'Unscramble letters to find all valid words.' },
           { href: 'wordle.html', icon: '🟩', title: 'Wordle Solver', desc: 'Get optimal guesses for your daily Wordle.' },
           { href: 'scrabble.html', icon: '🀄', title: 'Scrabble Finder', desc: 'Find highest-scoring words from your rack.' }
+        ],
+        calcCards: [
+          { href: 'mortgage-calculator.html', icon: '🏠', title: 'Mortgage Calculator', desc: 'Monthly payments, amortization, stamp duty & affordability.' },
+          { href: 'percentage-calculator.html', icon: '📊', title: 'Percentage Calculator', desc: 'Percentage of a number, increase/decrease, reverse % & VAT.' },
+          { href: 'savings-calculator.html', icon: '📈', title: 'Savings Calculator', desc: 'Compound interest, goal-based savings & inflation-adjusted returns.' }
         ],
         utilCards: [
           { href: 'colour-picker.html', icon: '🎨', title: 'Colour Picker', desc: 'Generate harmonious colour palettes with contrast checking.' },
