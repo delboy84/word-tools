@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free UK salary calculator — take-home pay, tax breakdown, NI, student loan & pension deductions. Works offline.">
+  <meta name="keywords" content="salary calculator, UK take-home pay, income tax, national insurance, student loan, pension, Scotland tax">
+  <meta property="og:title" content="Salary Calculator — Word Tools">
+  <meta property="og:description" content="Free UK salary calculator with tax, NI, student loan & pension deductions.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Salary Calculator — Word Tools">
+  <meta name="twitter:description" content="Free UK salary calculator. Works offline.">
+  <title>Salary Calculator — Word Tools</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="salaryApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">💷 Salary Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">UK take-home pay, tax & deductions</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'takehome'" :class="tab === 'takehome' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">💷 Take-Home</button>
+      <button @click="tab = 'breakdown'" :class="tab === 'breakdown' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📊 Breakdown</button>
+      <button @click="tab = 'compare'" :class="tab === 'compare' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">⚖️ Compare</button>
+    </div>
+
+    <!-- TAKE-HOME PAY TAB -->
+    <div x-show="tab === 'takehome'" x-transition>
+
+      <!-- Salary Input -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Gross Salary</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="grossInput" @input="calc()" step="1000" min="0" placeholder="40000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+        <!-- Period toggle -->
+        <div class="flex gap-1 mt-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+          <button @click="salaryPeriod='annual'; calc()" :class="salaryPeriod==='annual' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-2 rounded-md text-xs font-medium transition">Annual</button>
+          <button @click="salaryPeriod='monthly'; calc()" :class="salaryPeriod==='monthly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-2 rounded-md text-xs font-medium transition">Monthly</button>
+          <button @click="salaryPeriod='weekly'; calc()" :class="salaryPeriod==='weekly' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-2 rounded-md text-xs font-medium transition">Weekly</button>
+        </div>
+      </div>
+
+      <!-- Region & Student Loan -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Tax Region</label>
+          <div class="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+            <button @click="region='ruk'; calc()" :class="region==='ruk' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition">rUK</button>
+            <button @click="region='scotland'; calc()" :class="region==='scotland' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1.5 px-2 rounded-md text-xs font-medium transition">Scotland</button>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Student Loan</label>
+          <select x-model="studentLoan" @change="calc()" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm text-gray-900 dark:text-gray-100 outline-none">
+            <option value="none">None</option>
+            <option value="plan1">Plan 1</option>
+            <option value="plan2">Plan 2</option>
+            <option value="plan4">Plan 4</option>
+            <option value="plan5">Plan 5</option>
+            <option value="postgrad">Postgrad</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Pension & Tax Code -->
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Pension (%)</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="pensionPct" @input="calc()" step="0.5" min="0" max="100" placeholder="5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+            <span class="text-lg text-gray-400">%</span>
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Tax Code</label>
+          <input type="text" x-model="taxCode" @input="calc()" placeholder="1257L" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600">
+          <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">Standard: 1257L</div>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div x-show="annualGross > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Take-Home Pay</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Annual Take-Home</div>
+          <div class="text-3xl md:text-4xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(result.takeHomeAnnual)"></div>
+        </div>
+        <div class="grid grid-cols-3 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Monthly</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(result.takeHomeMonthly)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Weekly</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(result.takeHomeWeekly)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Daily</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(result.takeHomeDaily)"></div>
+          </div>
+        </div>
+
+        <!-- Visual bar breakdown -->
+        <h3 class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Deduction Breakdown</h3>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">Take-Home</span>
+            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+              <div class="bar-chart-bar h-full rounded-full bg-green-500 dark:bg-green-400" :style="'width:' + (annualGross > 0 ? (result.takeHomeAnnual / annualGross * 100) : 0) + '%'"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="annualGross > 0 ? (result.takeHomeAnnual / annualGross * 100).toFixed(1) + '%' : '0%'"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">Income Tax</span>
+            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+              <div class="bar-chart-bar h-full rounded-full bg-red-500 dark:bg-red-400" :style="'width:' + (annualGross > 0 ? (result.incomeTax / annualGross * 100) : 0) + '%'"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum(result.incomeTax)"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">NI</span>
+            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+              <div class="bar-chart-bar h-full rounded-full bg-orange-500 dark:bg-orange-400" :style="'width:' + (annualGross > 0 ? (result.nationalInsurance / annualGross * 100) : 0) + '%'"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum(result.nationalInsurance)"></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">Pension</span>
+            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+              <div class="bar-chart-bar h-full rounded-full bg-purple-500 dark:bg-purple-400" :style="'width:' + (annualGross > 0 ? (result.pensionAmount / annualGross * 100) : 0) + '%'"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum(result.pensionAmount)"></span>
+          </div>
+          <div class="flex items-center gap-2" x-show="result.studentLoan > 0">
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">Student</span>
+            <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+              <div class="bar-chart-bar h-full rounded-full bg-yellow-500 dark:bg-yellow-400" :style="'width:' + (annualGross > 0 ? (result.studentLoan / annualGross * 100) : 0) + '%'"></div>
+            </div>
+            <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum(result.studentLoan)"></span>
+          </div>
+        </div>
+
+        <!-- Summary figures -->
+        <div class="grid grid-cols-2 gap-3 mt-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Gross (Annual)</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(annualGross)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Deductions</div>
+            <div class="text-lg font-bold text-red-500 dark:text-red-400" x-text="'£' + fmtNum(result.totalDeductions)"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mt-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Effective Tax Rate</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="annualGross > 0 ? (result.incomeTax / annualGross * 100).toFixed(1) + '%' : '0%'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Marginal Rate</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="result.marginalRate + '%'"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAX BREAKDOWN TAB -->
+    <div x-show="tab === 'breakdown'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Gross Salary (Annual)</label>
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-400 dark:text-gray-500">£</span>
+          <input type="number" x-model.number="grossInput" @input="calc()" step="1000" min="0" placeholder="40000" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+        </div>
+        <div class="flex gap-1 mt-2 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+          <button @click="region='ruk'; calc()" :class="region==='ruk' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-2 rounded-md text-xs font-medium transition">rUK</button>
+          <button @click="region='scotland'; calc()" :class="region==='scotland' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-2 rounded-md text-xs font-medium transition">Scotland</button>
+        </div>
+      </div>
+
+      <!-- Income Tax Bands -->
+      <div x-show="annualGross > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Income Tax Bands</h2>
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Band</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Income</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Rate</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Tax</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="band in result.taxBands" :key="band.label">
+                <tr class="border-b border-gray-100 dark:border-gray-700">
+                  <td class="py-1.5 text-gray-900 dark:text-gray-100" x-text="band.label"></td>
+                  <td class="py-1.5 text-right text-gray-700 dark:text-gray-300" x-text="'£' + fmtNum(band.income)"></td>
+                  <td class="py-1.5 text-right text-gray-700 dark:text-gray-300" x-text="band.rate + '%'"></td>
+                  <td class="py-1.5 text-right font-medium text-red-500 dark:text-red-400" x-text="'£' + fmtNum(band.tax)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr class="border-t border-gray-200 dark:border-gray-600 font-semibold">
+                <td class="py-2 text-gray-900 dark:text-gray-100">Total</td>
+                <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(annualGross)"></td>
+                <td class="py-2 text-right text-gray-900 dark:text-gray-100"></td>
+                <td class="py-2 text-right text-red-500 dark:text-red-400" x-text="'£' + fmtNum(result.incomeTax)"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- NI Bands -->
+      <div x-show="annualGross > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">National Insurance</h2>
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Band</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Income</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Rate</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">NI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="band in result.niBands" :key="band.label">
+                <tr class="border-b border-gray-100 dark:border-gray-700">
+                  <td class="py-1.5 text-gray-900 dark:text-gray-100" x-text="band.label"></td>
+                  <td class="py-1.5 text-right text-gray-700 dark:text-gray-300" x-text="'£' + fmtNum(band.income)"></td>
+                  <td class="py-1.5 text-right text-gray-700 dark:text-gray-300" x-text="band.rate + '%'"></td>
+                  <td class="py-1.5 text-right font-medium text-orange-500 dark:text-orange-400" x-text="'£' + fmtNum(band.tax)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr class="border-t border-gray-200 dark:border-gray-600 font-semibold">
+                <td class="py-2 text-gray-900 dark:text-gray-100">Total</td>
+                <td class="py-2 text-right text-gray-900 dark:text-gray-100"></td>
+                <td class="py-2 text-right text-gray-900 dark:text-gray-100"></td>
+                <td class="py-2 text-right text-orange-500 dark:text-orange-400" x-text="'£' + fmtNum(result.nationalInsurance)"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Student Loan -->
+      <div x-show="annualGross > 0 && result.studentLoan > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Student Loan Repayment</h2>
+        <div class="space-y-2 text-xs md:text-sm">
+          <div class="flex justify-between py-1 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-gray-500 dark:text-gray-400" x-text="studentLoanLabel"></span>
+            <span class="font-medium text-yellow-600 dark:text-yellow-400" x-text="'£' + fmtNum(result.studentLoan)"></span>
+          </div>
+          <div class="flex justify-between py-1 border-b border-gray-100 dark:border-gray-700">
+            <span class="text-gray-500 dark:text-gray-400">Threshold</span>
+            <span class="font-medium text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(result.studentLoanThreshold)"></span>
+          </div>
+          <div class="flex justify-between py-1">
+            <span class="text-gray-500 dark:text-gray-400">Rate</span>
+            <span class="font-medium text-gray-900 dark:text-gray-100" x-text="result.studentLoanRate + '%'"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Effective & Marginal rates -->
+      <div x-show="annualGross > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Rate Summary</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Effective Rate</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="(annualGross > 0 ? (result.totalDeductions / annualGross * 100).toFixed(1) : '0') + '%'"></div>
+            <div class="text-xs text-gray-400 dark:text-gray-500">total deductions ÷ gross</div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Marginal Rate</div>
+            <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="result.marginalRate + '%'"></div>
+            <div class="text-xs text-gray-400 dark:text-gray-500">tax on next £1 earned</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARE TAB -->
+    <div x-show="tab === 'compare'" x-transition>
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <!-- Salary A -->
+        <div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <div class="text-xs font-semibold text-blue-600 dark:text-cyan-400 mb-2">Salary A</div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Gross (Annual)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="compareA.gross" @input="calcCompare()" class="w-full text-lg font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="40000">
+            </div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Region</label>
+            <div class="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+              <button @click="compareA.region='ruk'; calcCompare()" :class="compareA.region==='ruk' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-1 rounded-md text-xs font-medium transition">rUK</button>
+              <button @click="compareA.region='scotland'; calcCompare()" :class="compareA.region==='scotland' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-1 rounded-md text-xs font-medium transition">Scot</button>
+            </div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Student Loan</label>
+            <select x-model="compareA.studentLoan" @change="calcCompare()" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-gray-100 outline-none">
+              <option value="none">None</option>
+              <option value="plan1">Plan 1</option>
+              <option value="plan2">Plan 2</option>
+              <option value="plan4">Plan 4</option>
+              <option value="plan5">Plan 5</option>
+              <option value="postgrad">Postgrad</option>
+            </select>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pension %</label>
+            <input type="number" x-model.number="compareA.pension" @input="calcCompare()" step="0.5" min="0" max="100" class="w-full text-lg font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="5">
+          </div>
+        </div>
+        <!-- Salary B -->
+        <div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <div class="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-2">Salary B</div>
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Gross (Annual)</label>
+            <div class="flex items-center gap-1">
+              <span class="text-sm text-gray-400">£</span>
+              <input type="number" x-model.number="compareB.gross" @input="calcCompare()" class="w-full text-lg font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="50000">
+            </div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Region</label>
+            <div class="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
+              <button @click="compareB.region='ruk'; calcCompare()" :class="compareB.region==='ruk' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-1 rounded-md text-xs font-medium transition">rUK</button>
+              <button @click="compareB.region='scotland'; calcCompare()" :class="compareB.region==='scotland' ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-500 dark:text-gray-400'" class="flex-1 py-1 px-1 rounded-md text-xs font-medium transition">Scot</button>
+            </div>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 mb-2">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Student Loan</label>
+            <select x-model="compareB.studentLoan" @change="calcCompare()" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-2 py-1 text-xs text-gray-900 dark:text-gray-100 outline-none">
+              <option value="none">None</option>
+              <option value="plan1">Plan 1</option>
+              <option value="plan2">Plan 2</option>
+              <option value="plan4">Plan 4</option>
+              <option value="plan5">Plan 5</option>
+              <option value="postgrad">Postgrad</option>
+            </select>
+          </div>
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3">
+            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Pension %</label>
+            <input type="number" x-model.number="compareB.pension" @input="calcCompare()" step="0.5" min="0" max="100" class="w-full text-lg font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="5">
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare Results -->
+      <div x-show="compareResultA.takeHomeAnnual > 0 || compareResultB.takeHomeAnnual > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Comparison</h2>
+        <div class="grid grid-cols-3 gap-2 text-center mb-3">
+          <div></div>
+          <div class="text-xs font-semibold text-blue-600 dark:text-cyan-400">A</div>
+          <div class="text-xs font-semibold text-purple-600 dark:text-purple-400">B</div>
+        </div>
+        <div class="space-y-2">
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Gross</div>
+            <div class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(compareA.gross || 0)"></div>
+            <div class="text-sm font-bold text-purple-600 dark:text-purple-400" x-text="'£' + fmtNum(compareB.gross || 0)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Income Tax</div>
+            <div class="text-sm font-bold text-red-500 dark:text-red-400" x-text="'£' + fmtNum(compareResultA.incomeTax)"></div>
+            <div class="text-sm font-bold text-red-500 dark:text-red-400" x-text="'£' + fmtNum(compareResultB.incomeTax)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">National Insurance</div>
+            <div class="text-sm font-bold text-orange-500 dark:text-orange-400" x-text="'£' + fmtNum(compareResultA.nationalInsurance)"></div>
+            <div class="text-sm font-bold text-orange-500 dark:text-orange-400" x-text="'£' + fmtNum(compareResultB.nationalInsurance)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Pension</div>
+            <div class="text-sm font-bold text-purple-500 dark:text-purple-400" x-text="'£' + fmtNum(compareResultA.pensionAmount)"></div>
+            <div class="text-sm font-bold text-purple-500 dark:text-purple-400" x-text="'£' + fmtNum(compareResultB.pensionAmount)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center" x-show="compareResultA.studentLoan > 0 || compareResultB.studentLoan > 0">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Student Loan</div>
+            <div class="text-sm font-bold text-yellow-600 dark:text-yellow-400" x-text="'£' + fmtNum(compareResultA.studentLoan)"></div>
+            <div class="text-sm font-bold text-yellow-600 dark:text-yellow-400" x-text="'£' + fmtNum(compareResultB.studentLoan)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center border-t border-gray-200 dark:border-gray-600 pt-2">
+            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 text-left">Take-Home</div>
+            <div class="text-sm font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultA.takeHomeAnnual)"></div>
+            <div class="text-sm font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultB.takeHomeAnnual)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Monthly</div>
+            <div class="text-sm font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultA.takeHomeMonthly)"></div>
+            <div class="text-sm font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultB.takeHomeMonthly)"></div>
+          </div>
+        </div>
+        <div x-show="compareResultA.takeHomeAnnual > 0 && compareResultB.takeHomeAnnual > 0 && Math.abs(compareResultA.takeHomeAnnual - compareResultB.takeHomeAnnual) > 0.01" class="mt-3 text-xs bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          <span x-show="compareResultA.takeHomeAnnual < compareResultB.takeHomeAnnual">🟢 Salary B gives <span class="font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultB.takeHomeAnnual - compareResultA.takeHomeAnnual)"></span> more take-home per year</span>
+          <span x-show="compareResultB.takeHomeAnnual < compareResultA.takeHomeAnnual">🟢 Salary A gives <span class="font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(compareResultA.takeHomeAnnual - compareResultB.takeHomeAnnual)"></span> more take-home per year</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script>
+    function salaryApp() {
+      return {
+        darkMode: false,
+        tab: 'takehome',
+        // Inputs
+        grossInput: null,
+        salaryPeriod: 'annual',
+        region: 'ruk',
+        studentLoan: 'none',
+        pensionPct: null,
+        taxCode: '1257L',
+        // Computed annual
+        annualGross: 0,
+        // Result object
+        result: {
+          incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0,
+          totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, takeHomeWeekly: 0, takeHomeDaily: 0,
+          marginalRate: 0, taxBands: [], niBands: [],
+          studentLoanThreshold: 0, studentLoanRate: 0
+        },
+        // Compare
+        compareA: { gross: null, region: 'ruk', studentLoan: 'none', pension: null },
+        compareB: { gross: null, region: 'ruk', studentLoan: 'none', pension: null },
+        compareResultA: { incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0, totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, marginalRate: 0 },
+        compareResultB: { incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0, totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, marginalRate: 0 },
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0.00';
+          return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+
+        get studentLoanLabel() {
+          const labels = { none: 'None', plan1: 'Plan 1', plan2: 'Plan 2', plan4: 'Plan 4', plan5: 'Plan 5', postgrad: 'Postgraduate' };
+          return labels[this.studentLoan] || 'None';
+        },
+
+        // Parse tax code to get personal allowance
+        parseTaxCode(code) {
+          if (!code) return 12570;
+          const m = code.match(/^(\d+)/);
+          if (m) return parseInt(m[1]) * 10;
+          return 12570;
+        },
+
+        // Calculate personal allowance with taper
+        calcPersonalAllowance(gross, baseAllowance) {
+          if (gross <= 100000) return baseAllowance;
+          if (gross >= 125140) return 0;
+          return Math.max(0, baseAllowance - (gross - 100000) / 2);
+        },
+
+        // Calculate income tax for rUK
+        calcIncomeTaxRUK(taxableIncome, personalAllowance) {
+          const bands = [];
+          const pa = personalAllowance;
+          const bandsDef = [
+            { label: 'Personal Allowance', lower: 0, upper: pa, rate: 0 },
+            { label: 'Basic Rate', lower: 0, upper: 37700, rate: 20 },
+            { label: 'Higher Rate', lower: 37700, upper: 112100, rate: 40 },
+            { label: 'Additional Rate', lower: 112100, upper: Infinity, rate: 45 }
+          ];
+          let totalTax = 0;
+          for (const band of bandsDef) {
+            const bandWidth = band.upper === Infinity ? Infinity : band.upper - band.lower;
+            // Income in this band = income above band.lower, capped at band width
+            const incomeInBand = Math.max(0, Math.min(taxableIncome, band.upper) - band.lower);
+            // But for the PA band, the income is min(pensionAdjustedGross, pa) but since we already subtracted PA...
+            // Actually, taxableIncome = gross - pension - PA already. So first band is 0-rated PA.
+            // Let's reconsider: taxableIncome is what's left after PA.
+            // So the bands that matter start from £0 of taxable income:
+            // 0-37700 @ 20%, 37700-112100 @ 40%, 112100+ @ 45%
+          }
+          // Simpler approach: taxableIncome is after PA deduction
+          let remaining = taxableIncome;
+          const realBands = [
+            { label: 'Basic Rate (20%)', width: 37700, rate: 20 },
+            { label: 'Higher Rate (40%)', width: 112100 - 37700, rate: 40 },
+            { label: 'Additional Rate (45%)', width: Infinity, rate: 45 }
+          ];
+          for (const band of realBands) {
+            const incomeInBand = Math.min(Math.max(0, remaining), band.width === Infinity ? remaining : band.width);
+            const tax = incomeInBand * band.rate / 100;
+            totalTax += tax;
+            bands.push({ label: band.label, income: incomeInBand, rate: band.rate, tax: tax });
+            remaining -= incomeInBand;
+          }
+          return { tax: totalTax, bands };
+        },
+
+        // Calculate income tax for Scotland
+        calcIncomeTaxScotland(taxableIncome, personalAllowance) {
+          let remaining = taxableIncome;
+          const realBands = [
+            { label: 'Starter (19%)', width: 2306, rate: 19 },       // 14876-12570=2306
+            { label: 'Basic (20%)', width: 11685, rate: 20 },          // 26561-14876=11685
+            { label: 'Intermediate (21%)', width: 17101, rate: 21 },   // 43662-26561=17101
+            { label: 'Higher (42%)', width: 31338, rate: 42 },         // 75000-43662=31338
+            { label: 'Advanced (45%)', width: 50140, rate: 45 },        // 125140-75000=50140
+            { label: 'Top (48%)', width: Infinity, rate: 48 }
+          ];
+          let totalTax = 0;
+          const bands = [];
+          for (const band of realBands) {
+            const incomeInBand = Math.min(Math.max(0, remaining), band.width === Infinity ? remaining : band.width);
+            const tax = incomeInBand * band.rate / 100;
+            totalTax += tax;
+            bands.push({ label: band.label, income: incomeInBand, rate: band.rate, tax: tax });
+            remaining -= incomeInBand;
+          }
+          return { tax: totalTax, bands };
+        },
+
+        // Calculate NI (2025/26 Employee Class 1)
+        calcNI(adjustedGross) {
+          // NI is on earnings, not taxable income (pension via salary sacrifice reduces it,
+          // but % pension from gross doesn't for these purposes - we calculate NI on gross minus
+          // salary sacrifice. For simplicity, NI is on gross (pension relief type affects this
+          // but we'll use gross for NI as net pay arrangement is most common for % contributions)
+          const PT = 12570;
+          const UEL = 50270;
+          let remaining = adjustedGross;
+          const bandsDef = [
+            { label: 'Below PT (0%)', width: PT, rate: 0 },
+            { label: 'PT to UEL (8%)', width: UEL - PT, rate: 8 },
+            { label: 'Above UEL (2%)', width: Infinity, rate: 2 }
+          ];
+          let totalNI = 0;
+          const bands = [];
+          for (const band of bandsDef) {
+            const incomeInBand = Math.min(Math.max(0, remaining), band.width === Infinity ? remaining : band.width);
+            const ni = incomeInBand * band.rate / 100;
+            totalNI += ni;
+            bands.push({ label: band.label, income: incomeInBand, rate: band.rate, tax: ni });
+            remaining -= incomeInBand;
+          }
+          return { ni: totalNI, bands };
+        },
+
+        // Calculate student loan repayment
+        calcStudentLoan(gross, plan) {
+          const plans = {
+            plan1: { threshold: 24990, rate: 9 },
+            plan2: { threshold: 27295, rate: 9 },
+            plan4: { threshold: 31395, rate: 9 },
+            plan5: { threshold: 25000, rate: 9 },
+            postgrad: { threshold: 21000, rate: 6 }
+          };
+          if (plan === 'none' || !plans[plan]) return { amount: 0, threshold: 0, rate: 0 };
+          const p = plans[plan];
+          const repayable = Math.max(0, gross - p.threshold);
+          const amount = repayable * p.rate / 100;
+          return { amount: amount, threshold: p.threshold, rate: p.rate };
+        },
+
+        // Get marginal rate
+        getMarginalRate(gross, region, studentLoan, pensionPct) {
+          // Calculate rate on the next £1 earned
+          const r1 = this.calcFull(gross, region, studentLoan, pensionPct);
+          const r2 = this.calcFull(gross + 1, region, studentLoan, pensionPct);
+          return ((r1.totalDeductions - r2.totalDeductions) * -1).toFixed(0);
+        },
+
+        // Core calculation
+        calcFull(gross, region, studentLoan, pensionPct) {
+          const grossVal = parseFloat(gross) || 0;
+          const pension = parseFloat(pensionPct) || 0;
+          if (grossVal <= 0) return this.emptyResult();
+
+          const pensionAmount = grossVal * pension / 100;
+          // For income tax: pension reduces taxable income (relief at source / net pay)
+          const adjustedGross = grossVal - pensionAmount;
+          const baseAllowance = this.parseTaxCode(this.taxCode);
+          const personalAllowance = this.calcPersonalAllowance(adjustedGross, baseAllowance);
+          const taxableIncome = Math.max(0, adjustedGross - personalAllowance);
+
+          // Income Tax
+          let itResult;
+          if (region === 'scotland') {
+            itResult = this.calcIncomeTaxScotland(taxableIncome, personalAllowance);
+          } else {
+            itResult = this.calcIncomeTaxRUK(taxableIncome, personalAllowance);
+          }
+
+          // NI on adjusted gross (pension via net pay reduces NI basis)
+          const niResult = this.calcNI(adjustedGross);
+
+          // Student Loan on gross (not reduced by pension)
+          const slResult = this.calcStudentLoan(grossVal, studentLoan);
+
+          const totalDeductions = itResult.tax + niResult.ni + slResult.amount;
+          const takeHomeAnnual = adjustedGross - itResult.tax - niResult.ni - slResult.amount;
+          // Wait - take home should be gross - all deductions
+          // takeHome = gross - incomeTax - NI - studentLoan - pension
+          // pension is already deducted from adjustedGross
+          // So: takeHome = adjustedGross - incomeTax - NI - studentLoan
+          // where adjustedGross = gross - pension
+          // That gives: gross - pension - incomeTax - NI - studentLoan ✓
+
+          return {
+            incomeTax: itResult.tax,
+            nationalInsurance: niResult.ni,
+            pensionAmount: pensionAmount,
+            studentLoan: slResult.amount,
+            studentLoanThreshold: slResult.threshold,
+            studentLoanRate: slResult.rate,
+            totalDeductions: itResult.tax + niResult.ni + pensionAmount + slResult.amount,
+            takeHomeAnnual: takeHomeAnnual,
+            takeHomeMonthly: takeHomeAnnual / 12,
+            takeHomeWeekly: takeHomeAnnual / 52,
+            takeHomeDaily: takeHomeAnnual / 260,
+            marginalRate: 0, // set separately
+            taxBands: itResult.bands,
+            niBands: niResult.bands
+          };
+        },
+
+        emptyResult() {
+          return {
+            incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0,
+            totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, takeHomeWeekly: 0, takeHomeDaily: 0,
+            marginalRate: 0, taxBands: [], niBands: [],
+            studentLoanThreshold: 0, studentLoanRate: 0
+          };
+        },
+
+        calc() {
+          const raw = parseFloat(this.grossInput) || 0;
+          if (raw <= 0) {
+            this.annualGross = 0;
+            this.result = this.emptyResult();
+            return;
+          }
+          // Convert to annual based on period
+          if (this.salaryPeriod === 'monthly') {
+            this.annualGross = raw * 12;
+          } else if (this.salaryPeriod === 'weekly') {
+            this.annualGross = raw * 52;
+          } else {
+            this.annualGross = raw;
+          }
+
+          this.result = this.calcFull(this.annualGross, this.region, this.studentLoan, this.pensionPct);
+
+          // Marginal rate
+          const r1 = this.calcFull(this.annualGross, this.region, this.studentLoan, this.pensionPct);
+          const r2 = this.calcFull(this.annualGross + 1, this.region, this.studentLoan, this.pensionPct);
+          this.result.marginalRate = Math.round((r2.totalDeductions - r1.totalDeductions) * 100);
+
+          this.calcCompare();
+        },
+
+        calcCompare() {
+          const grossA = parseFloat(this.compareA.gross) || 0;
+          const grossB = parseFloat(this.compareB.gross) || 0;
+          this.compareResultA = grossA > 0 ? this.calcFull(grossA, this.compareA.region, this.compareA.studentLoan, this.compareA.pension) : { incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0, totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, marginalRate: 0 };
+          this.compareResultB = grossB > 0 ? this.calcFull(grossB, this.compareB.region, this.compareB.studentLoan, this.compareB.pension) : { incomeTax: 0, nationalInsurance: 0, pensionAmount: 0, studentLoan: 0, totalDeductions: 0, takeHomeAnnual: 0, takeHomeMonthly: 0, marginalRate: 0 };
+        }
+      };
+    }
+  </script>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+      <br>
+      <span class="text-gray-300 dark:text-gray-700">Tax rates: HMRC 2025/26. This calculator is for estimation only — not financial advice.</span>
+    </div>
+</body>
+</html>
