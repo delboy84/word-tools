@@ -1,4 +1,4 @@
-const CACHE_NAME = 'word-tools-v1';
+const CACHE_NAME = 'thinker-toolbox-v2';
 const ASSETS = [
   '/',
   '/index.html',

@@ -1,7 +1,7 @@
 {
-  "name": "Word Tools",
-  "short_name": "WordTools",
-  "description": "Free offline word puzzle solvers and colour picker",
+  "name": "Thinker Toolbox",
+  "short_name": "ThinkerToolbox",
+  "description": "Free offline calculators, puzzle solvers & utilities",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f9fafb",
