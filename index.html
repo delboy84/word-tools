@@ -65,6 +65,20 @@
       </template>
     </div>
 
+    <!-- Energy Section -->
+    <h2 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Energy</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-8">
+      <template x-for="card in energyCards" :key="card.href">
+        <a :href="card.href" class="flex items-center gap-3 p-4 md:p-6 md:block bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition group">
+          <div class="text-2xl md:text-3xl md:mb-3 shrink-0" x-text="card.icon"></div>
+          <div>
+            <h3 class="text-base md:text-lg font-semibold text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-cyan-400 transition" x-text="card.title"></h3>
+            <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5 md:mt-1" x-text="card.desc"></p>
+          </div>
+        </a>
+      </template>
+    </div>
+
     <!-- Thinker Toolbox Section -->
     <h2 class="text-sm font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Word Puzzles</h2>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4 md:mb-8">
@@ -108,6 +122,11 @@
           { href: 'anagram.html', icon: '🔄', title: 'Anagram Solver', desc: 'Unscramble letters to find all valid words.' },
           { href: 'wordle.html', icon: '🟩', title: 'Wordle Solver', desc: 'Get optimal guesses for your daily Wordle.' },
           { href: 'scrabble.html', icon: '🀄', title: 'Scrabble Finder', desc: 'Find highest-scoring words from your rack.' }
+        ],
+        energyCards: [
+          { href: 'solar-calculator.html', icon: '🔆', title: 'Solar Calculator', desc: 'Solar panel savings, ROI & payback period with or without battery.' },
+          { href: 'seg-calculator.html', icon: '⚡', title: 'SEG Earnings', desc: 'Compare Smart Export Guarantee rates and maximise your solar export income.' },
+          { href: 'octopus-tariff-calculator.html', icon: '🐙', title: 'Octopus Tariff Compare', desc: 'Find the best Octopus Energy tariff for solar panels & battery storage.' }
         ],
         calcCards: [
           { href: 'mortgage-calculator.html', icon: '🏠', title: 'Mortgage Calculator', desc: 'Monthly payments, amortization, stamp duty & affordability.' },
