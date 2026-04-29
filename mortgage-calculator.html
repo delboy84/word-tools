@@ -139,7 +139,7 @@
       <!-- Export PDF Button -->
       <div x-show="monthlyPayment > 0" class="mb-3 md:mb-4">
         <button @click="exportPDF()" :disabled="pdfLoading" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
-          <span x-show="!pdfLoading">\ud83d\udcc4 Export PDF</span>
+          <span x-show="!pdfLoading">📄 Export PDF</span>
           <span x-show="pdfLoading">Generating...</span>
         </button>
       </div>
@@ -721,7 +721,7 @@
           this.pdfLoading = true;
           try {
             const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js';
+            script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
             await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; document.head.appendChild(script); });
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
