@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('consent', 'default', {
+    'ad_storage': 'denied',
+    'ad_user_data': 'denied',
+    'ad_personalization': 'denied',
+    'analytics_storage': 'denied',
+    'functionality_storage': 'denied',
+    'personalization_storage': 'denied',
+    'security_storage': 'granted'
+  });
+</script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
+     crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free UK home battery optimiser. Find the best charge and discharge strategy for your solar battery on Octopus Go, Flux, Agile and more. Maximise your savings.">
+  <meta name="keywords" content="free battery optimiser, solar battery charge discharge, home battery strategy, Octopus Flux battery, Octopus Go battery charging, when to charge battery, solar battery savings UK, free online calculator">
+  <meta property="og:title" content="Free UK Battery Charge/Discharge Optimiser — Thinker Toolbox">
+  <meta property="og:description" content="Free UK home battery optimiser. Find the best charge and discharge strategy for your solar battery on Octopus Go, Flux, Agile and more. Maximise your savings.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Free UK Battery Charge/Discharge Optimiser — Thinker Toolbox">
+  <meta name="twitter:description" content="Free UK home battery optimiser. Find the best charge and discharge strategy for your solar battery on Octopus Go, Flux, Agile and more.">
+  <title>Free UK Battery Charge/Discharge Optimiser — Thinker Toolbox</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+    .timeline-cell { transition: background-color 0.3s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="batteryApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">🔋 Battery Optimiser</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Optimal charge & discharge strategy for your home battery</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'wizard'" :class="tab === 'wizard' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">🔋 Strategy Wizard</button>
+      <button @click="tab = 'savings'" :class="tab === 'savings' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">💰 Savings</button>
+      <button @click="tab = 'schedule'" :class="tab === 'schedule' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📊 Schedule</button>
+    </div>
+
+    <!-- WIZARD TAB -->
+    <div x-show="tab === 'wizard'" x-transition>
+
+      <!-- Step 1: Tariff -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">1</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Your Electricity Tariff</label>
+        </div>
+        <select x-model="tariff" @change="recalc()" class="w-full text-lg font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none border-b-2 border-gray-200 dark:border-gray-600 pb-1 focus:border-blue-500 dark:focus:border-cyan-400">
+          <option value="octopus-go" class="bg-white dark:bg-gray-800">Octopus Go</option>
+          <option value="intelligent-go" class="bg-white dark:bg-gray-800">Intelligent Octopus Go</option>
+          <option value="octopus-flux" class="bg-white dark:bg-gray-800">Octopus Flux</option>
+          <option value="intelligent-flux" class="bg-white dark:bg-gray-800">Intelligent Octopus Flux</option>
+          <option value="agile" class="bg-white dark:bg-gray-800">Agile Octopus</option>
+          <option value="cosy" class="bg-white dark:bg-gray-800">Cosy Octopus</option>
+          <option value="svt" class="bg-white dark:bg-gray-800">Standard Variable</option>
+        </select>
+        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400" x-text="tariffHint"></div>
+      </div>
+
+      <!-- Step 2: Solar System Size -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">2</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Solar System Size</label>
+        </div>
+        <div class="flex gap-2 flex-wrap mb-2">
+          <template x-for="s in [3,4,5,6,8,10]" :key="s">
+            <button @click="solarKwp = s; solarCustom = false; recalc()" :class="solarKwp === s && !solarCustom ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition" x-text="s + ' kWp'"></button>
+          </template>
+          <button @click="solarCustom = true" :class="solarCustom ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition">Custom</button>
+        </div>
+        <div x-show="solarCustom" x-transition>
+          <input type="number" x-model.number="solarKwp" @input="recalc()" step="0.5" min="0" placeholder="5" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+          <span class="text-xs text-gray-500 dark:text-gray-400">kWp</span>
+        </div>
+      </div>
+
+      <!-- Step 3: Battery Capacity -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">3</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Battery Capacity</label>
+        </div>
+        <div class="flex gap-2 flex-wrap mb-2">
+          <template x-for="b in batteryPresets" :key="b.val">
+            <button @click="batteryKwh = b.val; batteryCustom = false; recalc()" :class="batteryKwh === b.val && !batteryCustom ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition" x-text="b.label"></button>
+          </template>
+          <button @click="batteryCustom = true" :class="batteryCustom ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition">Custom</button>
+        </div>
+        <div x-show="batteryCustom" x-transition>
+          <input type="number" x-model.number="batteryKwh" @input="recalc()" step="0.5" min="0" placeholder="10" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+          <span class="text-xs text-gray-500 dark:text-gray-400">kWh</span>
+        </div>
+      </div>
+
+      <!-- Step 4: Daily Usage -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">4</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Daily Electricity Usage</label>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="number" x-model.number="dailyUsage" @input="recalc()" step="0.5" min="1" placeholder="10" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal">
+          <span class="text-lg text-gray-400">kWh</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Average UK household: ~8-10 kWh/day</div>
+      </div>
+
+      <!-- Step 5: Home Pattern -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">5</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">When Are You Home?</label>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button @click="homePattern = 'all-day'; recalc()" :class="homePattern === 'all-day' ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition">🏠 Home all day</button>
+          <button @click="homePattern = 'out-work'; recalc()" :class="homePattern === 'out-work' ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition">💼 Out at work</button>
+          <button @click="homePattern = 'mixed'; recalc()" :class="homePattern === 'mixed' ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition">🔄 Mixed</button>
+        </div>
+      </div>
+
+      <!-- Step 6: EV -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-cyan-900 text-blue-600 dark:text-cyan-400 text-xs font-bold">6</span>
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Do You Have an EV?</label>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-700 dark:text-gray-300" x-text="hasEV ? 'Yes — EV charging may share cheap-rate window' : 'No EV'"></span>
+          <button @click="hasEV = !hasEV; recalc()" :class="hasEV ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="hasEV ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- OPTIMAL STRATEGY CARD -->
+      <div x-show="strategy" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">⚡ Your Optimal Strategy</h2>
+
+        <!-- Strategy Summary -->
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Strategy</div>
+          <div class="text-sm md:text-base font-bold text-green-700 dark:text-green-400" x-text="strategy.summary"></div>
+        </div>
+
+        <!-- Tariff Rates -->
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5" x-text="strategy.cheapLabel || 'Off-Peak Rate'"></div>
+            <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="strategy.cheapRate + 'p/kWh'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5" x-text="strategy.peakLabel || 'Peak Rate'"></div>
+            <div class="text-lg md:text-xl font-bold text-red-500 dark:text-red-400" x-text="strategy.peakRate + 'p/kWh'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3" x-show="strategy.exportRate">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Export Rate</div>
+            <div class="text-lg md:text-xl font-bold text-purple-600 dark:text-purple-400" x-text="strategy.exportRate + 'p/kWh'"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3" x-show="!strategy.exportRate">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Day Rate</div>
+            <div class="text-lg md:text-xl font-bold text-orange-500 dark:text-orange-400" x-text="strategy.dayRate + 'p/kWh'"></div>
+          </div>
+        </div>
+
+        <!-- Charge & Discharge Windows -->
+        <div class="space-y-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded bg-orange-500"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><strong>Charge:</strong> <span x-text="strategy.chargeWindow"></span></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded bg-blue-500"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><strong>Discharge:</strong> <span x-text="strategy.dischargeWindow"></span></span>
+          </div>
+          <div class="flex items-center gap-2" x-show="strategy.exportWindow">
+            <span class="inline-block w-3 h-3 rounded bg-purple-500"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><strong>Export:</strong> <span x-text="strategy.exportWindow"></span></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-3 h-3 rounded bg-green-500"></span>
+            <span class="text-sm text-gray-700 dark:text-gray-300"><strong>Solar Generation:</strong> <span x-text="strategy.solarWindow"></span></span>
+          </div>
+        </div>
+
+        <!-- Daily Profit -->
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Daily Profit from Grid Cycling</div>
+          <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + dailyProfit.toFixed(2)"></div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Annual: <span class="font-medium text-blue-600 dark:text-cyan-400" x-text="'£' + annualProfit.toFixed(0)"></span></div>
+        </div>
+
+        <!-- Quick Calc Breakdown -->
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">How We Calculate This</div>
+          <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+            <div class="flex justify-between"><span>Charge cost (<span x-text="batteryKwh"></span> kWh × <span x-text="strategy.cheapRate"></span>p)</span><span x-text="'£' + chargeCost.toFixed(2)"></span></div>
+            <div class="flex justify-between"><span>Discharge value (<span x-text="usableKwh.toFixed(1)"></span> kWh × <span x-text="strategy.peakRate"></span>p)</span><span x-text="'£' + dischargeValue.toFixed(2)"></span></div>
+            <div class="flex justify-between" x-show="exportArbitrage > 0"><span>Export arbitrage</span><span x-text="'£' + exportArbitrage.toFixed(2)"></span></div>
+            <div class="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-1 font-semibold text-gray-900 dark:text-gray-100"><span>Daily profit</span><span x-text="'£' + dailyProfit.toFixed(2)"></span></div>
+          </div>
+        </div>
+
+        <!-- Strategy Tips -->
+        <div class="space-y-2">
+          <template x-for="tip in strategy.tips" :key="tip">
+            <div class="text-xs text-gray-600 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2" x-text="tip"></div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Visual Timeline (simplified for wizard) -->
+      <div x-show="strategy" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Daily Timeline Overview</h2>
+        <div class="flex rounded-lg overflow-hidden h-8 mb-2">
+          <template x-for="(slot, idx) in timelineSlots" :key="idx">
+            <div class="timeline-cell flex items-center justify-center text-xs font-medium"
+                 :class="{
+                   'bg-green-400 dark:bg-green-600 text-white': slot.type === 'solar',
+                   'bg-orange-400 dark:bg-orange-600 text-white': slot.type === 'charge',
+                   'bg-blue-400 dark:bg-blue-600 text-white': slot.type === 'discharge',
+                   'bg-purple-400 dark:bg-purple-600 text-white': slot.type === 'export',
+                   'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400': slot.type === 'grid',
+                   'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500': slot.type === 'idle'
+                 }"
+                 :style="'width:' + (100/24) + '%'"
+                 :title="slot.hour + ':00 — ' + slot.label">
+              <span class="hidden sm:inline" x-text="slot.hour"></span>
+            </div>
+          </template>
+        </div>
+        <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500">
+          <span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>24:00</span>
+        </div>
+        <div class="flex flex-wrap gap-3 mt-3 text-xs text-gray-500 dark:text-gray-400">
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-green-400 dark:bg-green-600"></span> Solar</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-orange-400 dark:bg-orange-600"></span> Grid Charge</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-blue-400 dark:bg-blue-600"></span> Battery Discharge</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-purple-400 dark:bg-purple-600"></span> Export</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-gray-200 dark:bg-gray-600"></span> Grid Import</span>
+        </div>
+      </div>
+
+      <!-- EV Note -->
+      <div x-show="hasEV" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-3 mb-3">
+        <div class="text-sm font-semibold text-yellow-800 dark:text-yellow-300 mb-1">🚗 EV Charging Note</div>
+        <div class="text-xs text-yellow-700 dark:text-yellow-400" x-text="evNote"></div>
+      </div>
+
+      <!-- Export PDF Button -->
+      <div class="mb-3 md:mb-4">
+        <button @click="exportPDF()" :disabled="pdfLoading" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span x-show="!pdfLoading">📄 Export PDF Report</span>
+          <span x-show="pdfLoading">Generating...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- SAVINGS TAB -->
+    <div x-show="tab === 'savings'" x-transition>
+      <div x-show="!strategy" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-4 mb-3">
+        <p class="text-sm text-yellow-800 dark:text-yellow-300">Complete the Strategy Wizard first to see your personalised savings breakdown.</p>
+      </div>
+
+      <div x-show="strategy">
+        <!-- Annual Breakdown -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">💰 Annual Savings Breakdown</h2>
+
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 md:p-4 mb-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Total Annual Savings from Optimal Strategy</div>
+            <div class="text-3xl md:text-4xl font-bold text-green-600 dark:text-green-400" x-text="'£' + annualProfit.toFixed(0)"></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Grid Charging Cost</div>
+              <div class="text-lg md:text-xl font-bold text-orange-500 dark:text-orange-400" x-text="'£' + annualChargeCost.toFixed(0)"></div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Peak Avoidance Savings</div>
+              <div class="text-lg md:text-xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + annualPeakSavings.toFixed(0)"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-3" x-show="annualExportEarnings > 0">
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Export Earnings Improvement</div>
+              <div class="text-lg md:text-xl font-bold text-purple-600 dark:text-purple-400" x-text="'£' + annualExportEarnings.toFixed(0)"></div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Annual Solar Self-Consumption Savings</div>
+              <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="'£' + annualSolarSavings.toFixed(0)"></div>
+            </div>
+          </div>
+
+          <!-- vs Solar-Only -->
+          <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Extra Savings vs "Just Use Battery for Solar" (no grid charging)</div>
+            <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + extraVsSolarOnly.toFixed(0)"></div>
+            <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">This is how much more you earn by strategically charging from the grid</div>
+          </div>
+        </div>
+
+        <!-- Multi-Year Projections -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">📈 Multi-Year Projections</h2>
+          <div class="space-y-1.5">
+            <template x-for="row in projections" :key="row.year">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-gray-500 dark:text-gray-400 w-12 text-right shrink-0" x-text="row.label"></span>
+                <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
+                  <div class="bar-chart-bar h-full rounded-full bg-green-500 dark:bg-green-400" :style="'width:' + row.pct + '%'"></div>
+                </div>
+                <span class="text-xs font-medium text-gray-700 dark:text-gray-300 w-16 text-right shrink-0" x-text="'£' + row.total"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Battery Payback -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">🔋 Battery Payback</h2>
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Estimated Battery Cost</div>
+              <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="'£' + batteryCost.toFixed(0)"></div>
+            </div>
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Payback Period</div>
+              <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="paybackYears > 0 ? paybackYears.toFixed(1) + ' years' : 'N/A'"></div>
+            </div>
+          </div>
+          <div class="text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+            💡 Battery cost estimated at ~£500/kWh installed. Payback assumes current tariff rates stay constant. With solar + optimal strategy, payback is typically 5–8 years.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE TAB -->
+    <div x-show="tab === 'schedule'" x-transition>
+      <div x-show="!strategy" class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-4 mb-3">
+        <p class="text-sm text-yellow-800 dark:text-yellow-300">Complete the Strategy Wizard first to see your personalised daily schedule.</p>
+      </div>
+
+      <div x-show="strategy">
+        <!-- Season Toggle -->
+        <div class="flex gap-2 mb-3">
+          <button @click="season = 'summer'" :class="season === 'summer' ? 'bg-yellow-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="flex-1 py-2 rounded-lg text-sm font-medium transition">☀️ Summer</button>
+          <button @click="season = 'winter'" :class="season === 'winter' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'" class="flex-1 py-2 rounded-lg text-sm font-medium transition">❄️ Winter</button>
+        </div>
+
+        <!-- Hourly Schedule -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3" x-text="season === 'summer' ? '☀️ Typical Summer Day Schedule' : '❄️ Typical Winter Day Schedule'"></h2>
+
+          <!-- Timeline bar -->
+          <div class="flex rounded-lg overflow-hidden h-10 mb-2">
+            <template x-for="(slot, idx) in scheduleSlots" :key="idx">
+              <div class="timeline-cell flex flex-col items-center justify-center text-xs font-medium border-r border-white dark:border-gray-900 last:border-0"
+                   :class="{
+                     'bg-green-400 dark:bg-green-600 text-white': slot.type === 'solar',
+                     'bg-orange-400 dark:bg-orange-600 text-white': slot.type === 'charge',
+                     'bg-blue-400 dark:bg-blue-600 text-white': slot.type === 'discharge',
+                     'bg-purple-400 dark:bg-purple-600 text-white': slot.type === 'export',
+                     'bg-gray-200 dark:bg-gray-600 text-gray-500 dark:text-gray-400': slot.type === 'grid',
+                     'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500': slot.type === 'idle'
+                   }"
+                   :style="'width:' + (100/24) + '%'"
+                   :title="slot.hour + ':00 — ' + slot.label + ' (Battery: ' + slot.batteryPct + '%)'">
+                <span x-text="slot.hour" class="leading-none"></span>
+                <span class="text-lg leading-none" x-text="slot.icon"></span>
+              </div>
+            </template>
+          </div>
+          <div class="flex justify-between text-xs text-gray-400 dark:text-gray-500 mb-4">
+            <span>0am</span><span>3am</span><span>6am</span><span>9am</span><span>12pm</span><span>3pm</span><span>6pm</span><span>9pm</span>
+          </div>
+
+          <!-- Hour-by-Hour Detail -->
+          <div class="space-y-1">
+            <template x-for="(slot, idx) in scheduleSlots" :key="idx">
+              <div class="flex items-center gap-2 py-1.5 px-2 rounded-lg"
+                   :class="idx % 2 === 0 ? 'bg-gray-50 dark:bg-gray-700/30' : ''">
+                <span class="text-xs font-mono text-gray-500 dark:text-gray-400 w-10 shrink-0" x-text="String(slot.hour).padStart(2,'0') + ':00'"></span>
+                <span class="text-base shrink-0" x-text="slot.icon"></span>
+                <span class="text-xs text-gray-700 dark:text-gray-300 flex-1" x-text="slot.label"></span>
+                <span class="text-xs text-gray-500 dark:text-gray-400 shrink-0" x-text="slot.batteryPct + '%'"></span>
+                <div class="w-16 bg-gray-200 dark:bg-gray-600 rounded-full h-2 overflow-hidden shrink-0">
+                  <div class="h-full rounded-full transition-all duration-300"
+                       :class="slot.batteryPct > 60 ? 'bg-green-500' : slot.batteryPct > 20 ? 'bg-yellow-500' : 'bg-red-500'"
+                       :style="'width:' + slot.batteryPct + '%'"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Season Comparison -->
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+          <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Season Comparison</h2>
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-3">
+              <div class="text-xs font-semibold text-yellow-700 dark:text-yellow-400 mb-2">☀️ Summer</div>
+              <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                <div>Solar: ~<span x-text="summerSolarKwh.toFixed(1)"></span> kWh/day</div>
+                <div>Grid charge needed: <span x-text="summerGridCharge.toFixed(1)"></span> kWh</div>
+                <div>Export available: <span x-text="summerExportKwh.toFixed(1)"></span> kWh</div>
+              </div>
+            </div>
+            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+              <div class="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2">❄️ Winter</div>
+              <div class="space-y-1 text-xs text-gray-600 dark:text-gray-400">
+                <div>Solar: ~<span x-text="winterSolarKwh.toFixed(1)"></span> kWh/day</div>
+                <div>Grid charge needed: <span x-text="winterGridCharge.toFixed(1)"></span> kWh</div>
+                <div>Export available: <span x-text="winterExportKwh.toFixed(1)"></span> kWh</div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+            💡 Summer: excess solar means less grid charging and more export. Winter: minimal solar so grid charging is essential for savings.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Financial Disclaimer -->
+    <div class="bg-gray-100 dark:bg-gray-800 rounded-xl p-3 mt-4 mb-4">
+      <p class="text-xs text-gray-500 dark:text-gray-400">⚠️ <strong>Disclaimer:</strong> This tool provides estimates for illustration only. Actual savings depend on your specific tariff rates, battery efficiency, solar generation, usage patterns, and weather. Tariff rates shown are approximate and may change. Always check your actual tariff rates on your energy supplier's website. This is not financial advice — consult a qualified advisor before making investment decisions.</p>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-2">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+  <script>
+    function batteryApp() {
+      return {
+        darkMode: false,
+        tab: 'wizard',
+        pdfLoading: false,
+        season: 'summer',
+
+        // Wizard inputs
+        tariff: 'octopus-go',
+        solarKwp: 5,
+        solarCustom: false,
+        batteryKwh: 10,
+        batteryCustom: false,
+        dailyUsage: 10,
+        homePattern: 'all-day',
+        hasEV: false,
+
+        batteryPresets: [
+          { val: 5, label: '5 kWh' },
+          { val: 7.5, label: '7.5 kWh' },
+          { val: 10, label: '10 kWh' },
+          { val: 13.5, label: '13.5 kWh (Tesla)' },
+          { val: 15, label: '15 kWh' }
+        ],
+
+        // Tariff data
+        tariffs: {
+          'octopus-go': {
+            name: 'Octopus Go',
+            cheapRate: 8, cheapLabel: 'Off-Peak Rate (00:00–05:00)',
+            peakRate: 28, peakLabel: 'Peak Rate',
+            dayRate: 28,
+            exportRate: 15,
+            chargeWindow: '00:00 – 05:00 (5 hours at off-peak)',
+            dischargeWindow: '16:00 – 23:00 (evening peak usage)',
+            exportWindow: 'Surplus solar during peak hours',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'Charge your battery from the grid during cheap hours (midnight–5am), then run your home from the battery during expensive peak hours. Export excess solar at peak rate for maximum income.',
+            tips: [
+              '💡 Set battery to charge from grid 00:00–05:00 at 8p/kWh',
+              '💡 Switch battery to discharge mode from 4pm to cover evening demand at 28p/kWh saved',
+              '💡 Export any excess solar at peak rate — this is worth more than self-consumption on Go',
+              '💡 If you have an EV, charge it in the same cheap window — but the battery only needs 5 hours'
+            ]
+          },
+          'intelligent-go': {
+            name: 'Intelligent Octopus Go',
+            cheapRate: 7, cheapLabel: 'Off-Peak Rate (23:30–05:30)',
+            peakRate: 28, peakLabel: 'Peak Rate',
+            dayRate: 28,
+            exportRate: 15,
+            chargeWindow: '23:30 – 05:30 (6 hours at off-peak)',
+            dischargeWindow: '16:00 – 23:00 (evening peak usage)',
+            exportWindow: 'Surplus solar during peak hours',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'Charge your battery from the grid during the extended cheap window (11:30pm–5:30am), then run your home from the battery during peak. The longer cheap window gives you more flexibility than standard Go.',
+            tips: [
+              '💡 The 6-hour cheap window is plenty for most batteries — you don\'t need the full window',
+              '💡 Smart charge your EV overnight — Octopus may extend cheap hours for EV charging',
+              '💡 Export excess solar during peak hours for 15p/kWh',
+              '💡 Intelligent Go is the best tariff if you have an EV + battery combo'
+            ]
+          },
+          'octopus-flux': {
+            name: 'Octopus Flux',
+            cheapRate: 16, cheapLabel: 'Import Off-Peak (02:00–05:00)',
+            peakRate: 28, peakLabel: 'Day Import Rate',
+            dayRate: 24,
+            exportRate: 18,
+            chargeWindow: '02:00 – 05:00 (3 hours at off-peak import)',
+            dischargeWindow: '16:00 – 23:00 (evening demand)',
+            exportWindow: '16:00 – 19:00 (peak export at 18p/kWh)',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'The battery arbitrage tariff. Charge from grid at 16p/kWh (2–5am), export stored energy/solar at 18p/kWh during peak (4–7pm), and use battery for evening demand. Small per-kWh profit adds up daily.',
+            tips: [
+              '💡 Charge battery from grid 2–5am at 16p/kWh',
+              '💡 Export stored/solar energy 4–7pm at 18p/kWh — that\'s 2p/kWh pure arbitrage profit',
+              '💡 Use remaining battery for evening demand to avoid 24p/kWh day rate',
+              '💡 Flux rewards battery owners who can export — the more you export at peak, the more you earn',
+              '💡 Consider a larger battery — Flux scales with capacity'
+            ]
+          },
+          'intelligent-flux': {
+            name: 'Intelligent Octopus Flux',
+            cheapRate: 15, cheapLabel: 'Import Off-Peak (02:00–05:00)',
+            peakRate: 28, peakLabel: 'Day Import Rate',
+            dayRate: 24,
+            exportRate: 22,
+            chargeWindow: '02:00 – 05:00 (3 hours at off-peak import)',
+            dischargeWindow: '16:00 – 23:00 (evening demand)',
+            exportWindow: '16:00 – 19:00 (peak export at 22p/kWh!)',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'The premium battery tariff. Same as Flux but with a higher peak export rate of 22p/kWh. Charge cheap, export at premium — 7p/kWh arbitrage profit plus solar earnings. The best tariff for large batteries.',
+            tips: [
+              '💡 22p/kWh export is the best rate available — maximise your export during 4–7pm',
+              '💡 Charge battery from grid 2–5am at 15p/kWh, then export 4–7pm at 22p/kWh',
+              '💡 That\'s 7p/kWh pure arbitrage profit per cycle — best in the market',
+              '💡 Requires a compatible battery/inverter (GivEnergy, Fox ESS, etc.)',
+              '💡 Fill battery from grid AND solar — export everything at peak'
+            ]
+          },
+          'agile': {
+            name: 'Agile Octopus',
+            cheapRate: 8, cheapLabel: 'Avg Cheap Rate (varies half-hourly)',
+            peakRate: 35, peakLabel: 'Avg Peak Rate (varies half-hourly)',
+            dayRate: 25,
+            exportRate: 15,
+            chargeWindow: 'Whenever price drops below 10p/kWh (often 2–5am, sometimes mid-afternoon)',
+            dischargeWindow: 'Whenever price spikes above 30p/kWh (typically 4–7pm, sometimes 5–8am)',
+            exportWindow: 'During highest-price windows (check daily)',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'The dynamic tariff. Prices change every 30 minutes. Charge when prices dip below 10p/kWh, discharge/export when they spike above 30p/kWh. Requires daily monitoring but offers the highest potential savings.',
+            tips: [
+              '💡 Check the Agile price forecast daily — cheap slots move around',
+              '💡 Negative prices sometimes happen (you get paid to use electricity!) — always charge during these',
+              '💡 Afternoon solar + low Agile prices = double win in summer',
+              '💡 Install an automation app (like Octopus Agile Tracker) to alert you to cheap/expensive slots',
+              '💡 Best case savings are huge, worst case (no monitoring) you might miss all the cheap windows',
+              '💡 Consider Flux or Go if you don\'t want to check prices daily'
+            ]
+          },
+          'cosy': {
+            name: 'Cosy Octopus',
+            cheapRate: 13, cheapLabel: 'Cosy Rate (04:00–07:00, 13:00–16:00)',
+            peakRate: 32, peakLabel: 'Peak Rate (16:00–19:00)',
+            dayRate: 27,
+            exportRate: 15,
+            chargeWindow: '04:00–07:00 and 13:00–16:00 (two cosy windows)',
+            dischargeWindow: '16:00 – 19:00 (avoid peak rate)',
+            exportWindow: 'Export solar surplus during peak hours',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'Two cheap windows per day. Charge your battery in both cosy slots (4–7am and 1–4pm at 13p/kWh), then avoid the expensive 4–7pm peak. Great if you have a heat pump — two daily cycles maximise savings.',
+            tips: [
+              '💡 Charge battery 4–7am (first cosy window) and 1–4pm (second cosy window)',
+              '💡 Discharge battery 4–7pm to avoid the 32p/kWh peak',
+              '💡 The afternoon cosy window overlaps with solar — charge + solar generation fill the battery twice',
+              '💡 Designed for heat pump users — the two daily cheap windows match heating demand',
+              '💡 You can potentially do two full battery cycles per day for double the savings'
+            ]
+          },
+          'svt': {
+            name: 'Standard Variable',
+            cheapRate: 25, cheapLabel: 'Flat Rate (no off-peak)',
+            peakRate: 25, peakLabel: 'Flat Rate (no peak)',
+            dayRate: 25,
+            exportRate: 15,
+            chargeWindow: 'No benefit from grid charging — flat rate',
+            dischargeWindow: 'Evening (to use stored solar)',
+            exportWindow: 'When solar exceeds battery + demand',
+            solarWindow: '08:00 – 18:00 (peaks 11:00 – 14:00)',
+            summary: 'No time-of-use rate means no arbitrage opportunity. Maximise self-consumption: store solar in the battery during the day, discharge in the evening. Do NOT charge from the grid — it costs the same as using grid directly.',
+            tips: [
+              '💡 Focus purely on solar self-consumption — store every possible kWh of solar',
+              '💡 Do NOT charge from the grid — at a flat rate, there\'s zero arbitrage profit',
+              '💡 Switch to a time-of-use tariff (Go, Flux) to unlock £250–400/year extra savings',
+              '💡 Your battery is underperforming on SVT — a tariff switch is the single biggest improvement',
+              '💡 Export surplus solar at 15p/kWh via SEG — but self-consumption saves 25p/kWh so prioritise that'
+            ]
+          }
+        },
+
+        // Computed
+        strategy: null,
+        timelineSlots: [],
+        scheduleSlots: [],
+        dailyProfit: 0,
+        annualProfit: 0,
+        chargeCost: 0,
+        dischargeValue: 0,
+        exportArbitrage: 0,
+        usableKwh: 0,
+        annualChargeCost: 0,
+        annualPeakSavings: 0,
+        annualExportEarnings: 0,
+        annualSolarSavings: 0,
+        extraVsSolarOnly: 0,
+        projections: [],
+        batteryCost: 0,
+        paybackYears: 0,
+        summerSolarKwh: 0,
+        winterSolarKwh: 0,
+        summerGridCharge: 0,
+        winterGridCharge: 0,
+        summerExportKwh: 0,
+        winterExportKwh: 0,
+        evNote: '',
+
+        get tariffHint() {
+          const hints = {
+            'octopus-go': '5hr off-peak window at ~8p/kWh — great for battery charging',
+            'intelligent-go': '6hr off-peak at ~7p/kWh — best if you also have an EV',
+            'octopus-flux': 'Import off-peak + export at premium — designed for battery owners',
+            'intelligent-flux': 'Same as Flux but 22p/kWh export — best battery tariff available',
+            'agile': 'Half-hourly pricing — highest potential savings but needs daily monitoring',
+            'cosy': 'Two cheap windows/day at ~13p — ideal for heat pump + battery',
+            'svt': 'Flat rate — no arbitrage possible. Consider switching tariff!'
+          };
+          return hints[this.tariff] || '';
+        },
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.recalc();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0';
+          return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+
+        recalc() {
+          const t = this.tariffs[this.tariff];
+          if (!t) return;
+          this.strategy = t;
+
+          const batt = parseFloat(this.batteryKwh) || 10;
+          const solar = parseFloat(this.solarKwp) || 5;
+          const usage = parseFloat(this.dailyUsage) || 10;
+
+          // Usable battery (90% DoD)
+          this.usableKwh = batt * 0.9;
+
+          // Average solar generation (annual average ~3.5 hrs equivalent in UK)
+          const avgSolarDaily = solar * 3.5;
+          const summerSolarDaily = solar * 5.0;
+          const winterSolarDaily = solar * 1.2;
+
+          this.summerSolarKwh = summerSolarDaily;
+          this.winterSolarKwh = winterSolarDaily;
+
+          // Grid charging cost per day
+          this.chargeCost = (this.usableKwh * t.cheapRate) / 100;
+
+          // Discharge value (replacing peak-rate electricity)
+          this.dischargeValue = (this.usableKwh * t.peakRate) / 100;
+
+          // Export arbitrage (Flux/Intelligent Flux: export at premium - charge at off-peak)
+          if (t.exportRate && t.exportRate > t.cheapRate) {
+            this.exportArbitrage = (this.usableKwh * (t.exportRate - t.cheapRate)) / 100;
+          } else {
+            this.exportArbitrage = 0;
+          }
+
+          // Daily profit calculation depends on tariff type
+          if (this.tariff === 'svt') {
+            // SVT: no grid cycling benefit, only solar self-consumption
+            const solarSelfConsumed = Math.min(avgSolarDaily, this.usableKwh, usage * 0.6);
+            this.dischargeValue = (solarSelfConsumed * t.peakRate) / 100;
+            this.chargeCost = 0;
+            this.exportArbitrage = 0;
+            this.dailyProfit = this.dischargeValue;
+          } else if (this.tariff === 'octopus-flux' || this.tariff === 'intelligent-flux') {
+            // Flux: arbitrage + avoided imports
+            const avoidedImportSavings = (this.usableKwh * (t.peakRate - t.cheapRate)) / 100;
+            this.dailyProfit = this.exportArbitrage + avoidedImportSavings;
+          } else if (this.tariff === 'cosy') {
+            // Cosy: two cheap windows, potentially two cycles
+            const cycleProfit = (this.usableKwh * (t.peakRate - t.cheapRate)) / 100;
+            // Can do ~1.5 cycles effectively with two windows
+            this.dailyProfit = cycleProfit * 1.3;
+          } else if (this.tariff === 'agile') {
+            // Agile: variable, use average spread
+            const spread = t.peakRate - t.cheapRate;
+            this.dailyProfit = (this.usableKwh * spread) / 100;
+          } else {
+            // Go / Intelligent Go: simple arbitrage
+            this.dailyProfit = this.dischargeValue - this.chargeCost;
+          }
+
+          this.annualProfit = this.dailyProfit * 365;
+
+          // Annual breakdown
+          this.annualChargeCost = this.chargeCost * 365;
+          this.annualPeakSavings = (this.dischargeValue - (this.tariff === 'svt' ? 0 : this.chargeCost)) * 365;
+
+          // Solar savings (self-consumption improvement from having battery)
+          const solarWithoutBatt = Math.max(0, avgSolarDaily - usage * 0.3) * t.exportRate / 100 * 365; // excess exported
+          const solarWithBatt = Math.min(avgSolarDaily, usage * 0.7) * t.peakRate / 100 * 365; // stored & used
+          this.annualSolarSavings = Math.max(0, solarWithBatt - solarWithoutBatt);
+
+          // Export earnings improvement
+          const summerExport = Math.max(0, summerSolarDaily - usage * 0.5);
+          const winterExport = Math.max(0, winterSolarDaily - usage * 0.3);
+          const avgExport = (summerExport * 180 + winterExport * 185) / 365;
+          this.annualExportEarnings = avgExport * (t.exportRate || 15) / 100 * 365;
+
+          // Extra vs solar-only (no grid charging)
+          const solarOnlySavings = this.annualSolarSavings;
+          this.extraVsSolarOnly = Math.max(0, this.annualProfit - solarOnlySavings);
+
+          // Multi-year projections (with 5% annual energy price inflation)
+          const inflationRate = 0.05;
+          let cumulative = 0;
+          this.projections = [];
+          const years = [1, 2, 3, 5, 10];
+          years.forEach(yr => {
+            let yearSaving = this.annualProfit * Math.pow(1 + inflationRate, yr - 1);
+            cumulative += yearSaving;
+            this.projections.push({
+              year: yr,
+              label: yr === 1 ? '1 year' : yr + ' years',
+              total: cumulative.toFixed(0),
+              pct: Math.min(100, cumulative / 5000 * 100)
+            });
+          });
+
+          // Battery payback
+          this.batteryCost = batt * 500;
+          const totalAnnualBenefit = this.annualProfit + this.annualSolarSavings;
+          this.paybackYears = totalAnnualBenefit > 0 ? this.batteryCost / totalAnnualBenefit : 0;
+
+          // Season grid charge/export
+          this.summerGridCharge = Math.max(0, this.usableKwh - Math.min(summerSolarDaily, this.usableKwh));
+          this.winterGridCharge = this.usableKwh; // Always need full grid charge in winter
+          this.summerExportKwh = Math.max(0, summerSolarDaily - this.usableKwh - usage * 0.3);
+          this.winterExportKwh = Math.max(0, winterSolarDaily - usage * 0.3);
+
+          // EV note
+          if (this.hasEV) {
+            if (this.tariff === 'intelligent-go') {
+              this.evNote = 'Intelligent Go is perfect for EV + battery. Your EV gets smart charging in the same cheap window (23:30–05:30 at 7p/kWh). The battery charges alongside the EV — no conflict. Octopus may even extend your cheap window for EV charging.';
+            } else if (this.tariff === 'octopus-go') {
+              this.evNote = 'Charge your EV 00:00–05:00 at 8p/kWh. A typical EV (60kWh) needs ~6hrs for a full charge, so you\'ll use most of the cheap window for the EV. Your battery only needs ~2-3 hours, so both fit comfortably. Consider Intelligent Go for a longer window.';
+            } else if (this.tariff === 'cosy') {
+              this.evNote = 'Two cheap windows per day means you can charge your EV across both cosy slots (4-7am + 1-4pm). Your battery charges in the same windows. Peak rate for EV charging (4-7pm) should be avoided — discharge battery here instead.';
+            } else {
+              this.evNote = 'Your EV and battery share the cheap-rate window. Prioritise EV charging first (it\'s the bigger load), then charge the battery in remaining cheap hours. Consider a tariff with a longer off-peak window for both.';
+            }
+          }
+
+          // Build timeline
+          this.buildTimeline();
+          this.buildSchedule();
+        },
+
+        buildTimeline() {
+          const t = this.strategy;
+          if (!t) return;
+          const slots = [];
+
+          // Determine charge/discharge/solar hours per tariff
+          const chargeHours = this.getChargeHours();
+          const dischargeHours = this.getDischargeHours();
+          const exportHours = this.getExportHours();
+          const solarHours = [8,9,10,11,12,13,14,15,16,17]; // approx
+
+          for (let h = 0; h < 24; h++) {
+            let type = 'idle';
+            let label = 'Idle';
+
+            if (chargeHours.includes(h)) {
+              type = 'charge';
+              label = 'Grid charging';
+            }
+            if (solarHours.includes(h) && h >= 8 && h <= 17) {
+              if (type === 'charge') {
+                // Solar generation alongside grid charging
+                label = 'Solar + Grid charge';
+              } else if (exportHours.includes(h)) {
+                type = 'export';
+                label = 'Exporting at premium';
+              } else {
+                type = 'solar';
+                label = 'Solar generation';
+              }
+            }
+            if (dischargeHours.includes(h) && type !== 'charge') {
+              if (exportHours.includes(h)) {
+                type = 'export';
+                label = 'Battery export at peak';
+              } else {
+                type = 'discharge';
+                label = 'Battery powering home';
+              }
+            }
+            // If nothing else, grid import during non-cheap hours
+            if (type === 'idle' && !chargeHours.includes(h)) {
+              type = 'grid';
+              label = 'Grid import';
+            }
+
+            slots.push({ hour: h, type, label });
+          }
+
+          this.timelineSlots = slots;
+        },
+
+        getChargeHours() {
+          switch (this.tariff) {
+            case 'octopus-go': return [0,1,2,3,4];
+            case 'intelligent-go': return [23,0,1,2,3,4];
+            case 'octopus-flux': case 'intelligent-flux': return [2,3,4];
+            case 'agile': return [2,3,4]; // typical
+            case 'cosy': return [4,5,6,13,14,15];
+            case 'svt': return [];
+            default: return [];
+          }
+        },
+
+        getDischargeHours() {
+          switch (this.tariff) {
+            case 'octopus-go': case 'intelligent-go': return [16,17,18,19,20,21,22,23];
+            case 'octopus-flux': case 'intelligent-flux': return [16,17,18,19,20,21,22,23];
+            case 'agile': return [16,17,18,19]; // typical peak
+            case 'cosy': return [16,17,18]; // peak window
+            case 'svt': return [18,19,20,21,22,23]; // evening only
+            default: return [18,19,20,21,22,23];
+          }
+        },
+
+        getExportHours() {
+          switch (this.tariff) {
+            case 'octopus-flux': case 'intelligent-flux': return [16,17,18]; // peak export
+            case 'agile': return [16,17,18]; // typical peak
+            default: return [];
+          }
+        },
+
+        buildSchedule() {
+          const t = this.strategy;
+          if (!t) return;
+
+          const isSummer = this.season === 'summer';
+          const solarDaily = isSummer ? this.summerSolarKwh : this.winterSolarKwh;
+          // Solar generation curve (simplified bell curve)
+          const solarCurve = [0,0,0,0,0,0,0,0, 0.05,0.15,0.3,0.5,0.65,0.7,0.6,0.4, 0.2,0.05,0,0,0,0,0,0]; // per-hour fraction
+          const maxSolarPerHour = solarDaily > 0 ? solarDaily / solarCurve.reduce((a,b) => a + (b > 0 ? b : 0), 0) * solarCurve.reduce((a,b) => a+b, 0) / solarCurve.filter(v => v > 0).length : 0;
+
+          const chargeHours = this.getChargeHours();
+          const dischargeHours = this.getDischargeHours();
+          const exportHours = this.getExportHours();
+
+          const batt = parseFloat(this.batteryKwh) || 10;
+          const usable = batt * 0.9;
+          let batteryLevel = 20; // Start at 20%
+          const usage = parseFloat(this.dailyUsage) || 10;
+          const hourlyUsage = usage / 24;
+
+          // Usage profile based on home pattern
+          const usageProfile = this.getUsageProfile();
+
+          const slots = [];
+
+          for (let h = 0; h < 24; h++) {
+            let icon = '🔌';
+            let type = 'grid';
+            let label = 'Grid import';
+            let solarGen = solarCurve[h] * solarDaily;
+            let homeUse = usageProfile[h] * usage;
+            let batteryDelta = 0;
+
+            if (chargeHours.includes(h)) {
+              // Charging from grid
+              const chargeAmount = Math.min(usable * (1 - batteryLevel/100), usable / chargeHours.length);
+              batteryDelta = chargeAmount / usable * 100;
+              batteryLevel = Math.min(100, batteryLevel + batteryDelta);
+              type = 'charge';
+              label = 'Grid charging battery';
+              icon = '🔋';
+            } else if (solarGen > 0.01) {
+              // Solar generation
+              const solarToBattery = Math.min(solarGen, usable * (1 - batteryLevel/100));
+              const solarToHome = Math.min(solarGen - solarToBattery, homeUse);
+              const solarExport = Math.max(0, solarGen - solarToBattery - solarToHome);
+
+              if (solarToBattery > 0.01) {
+                batteryDelta = solarToBattery / usable * 100;
+                batteryLevel = Math.min(100, batteryLevel + batteryDelta);
+              }
+
+              if (exportHours.includes(h) && (batteryLevel > 70 || solarExport > 0.5)) {
+                // Export during peak
+                type = 'export';
+                label = 'Exporting at premium rate';
+                icon = '📤';
+                if (batteryLevel > 70) {
+                  const exportFromBatt = Math.min(usable * 0.3, usable * (batteryLevel - 30) / 100);
+                  batteryDelta = -exportFromBatt / usable * 100;
+                  batteryLevel = Math.max(30, batteryLevel + batteryDelta);
+                }
+              } else if (solarToHome > 0.01 && solarToBattery > 0.01) {
+                type = 'solar';
+                label = 'Solar → home + battery';
+                icon = '☀️';
+              } else if (solarToBattery > 0.01) {
+                type = 'solar';
+                label = 'Solar → battery';
+                icon = '☀️';
+              } else if (solarToHome > 0.01) {
+                type = 'solar';
+                label = 'Solar → home';
+                icon = '☀️';
+              } else {
+                type = 'solar';
+                label = 'Solar exporting';
+                icon = '☀️';
+              }
+            } else if (dischargeHours.includes(h) && batteryLevel > 10) {
+              // Discharge battery
+              const dischargeAmount = Math.min(homeUse, usable * batteryLevel / 100);
+              batteryDelta = -dischargeAmount / usable * 100;
+              batteryLevel = Math.max(5, batteryLevel + batteryDelta);
+              type = 'discharge';
+              label = 'Battery powering home';
+              icon = '🔋';
+            } else {
+              // Grid import
+              type = 'grid';
+              label = 'Grid import';
+              icon = '🔌';
+            }
+
+            slots.push({
+              hour: h,
+              type,
+              label,
+              icon,
+              batteryPct: Math.round(Math.max(0, Math.min(100, batteryLevel)))
+            });
+          }
+
+          this.scheduleSlots = slots;
+        },
+
+        getUsageProfile() {
+          // Returns hourly fraction of daily usage
+          switch (this.homePattern) {
+            case 'all-day':
+              return [0.02,0.02,0.02,0.02,0.03,0.04,0.05,0.05,0.04,0.04,0.04,0.04,0.05,0.04,0.04,0.04,0.05,0.06,0.07,0.07,0.06,0.05,0.04,0.03];
+            case 'out-work':
+              return [0.02,0.02,0.01,0.01,0.02,0.03,0.04,0.03,0.02,0.02,0.02,0.02,0.03,0.02,0.02,0.04,0.06,0.08,0.09,0.09,0.08,0.07,0.05,0.03];
+            case 'mixed':
+              return [0.02,0.02,0.02,0.02,0.03,0.03,0.04,0.04,0.04,0.04,0.04,0.04,0.05,0.04,0.04,0.05,0.05,0.06,0.06,0.06,0.06,0.05,0.04,0.03];
+            default:
+              return [0.02,0.02,0.02,0.02,0.03,0.04,0.05,0.05,0.04,0.04,0.04,0.04,0.05,0.04,0.04,0.04,0.05,0.06,0.07,0.07,0.06,0.05,0.04,0.03];
+          }
+        },
+
+        async exportPDF() {
+          if (!this.strategy) { alert('Complete the wizard first.'); return; }
+          this.pdfLoading = true;
+          try {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+            await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; document.head.appendChild(script); });
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const m = 10;
+            let y = m;
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            function addFooter() {
+              doc.setFontSize(7);
+              doc.setFont('helvetica', 'italic');
+              doc.setTextColor(150);
+              doc.text('Generated by Thinker Toolbox — For illustration only, not financial advice', pageW / 2, pageH - 5, { align: 'center' });
+            }
+
+            function checkPage(needed) {
+              if (y + needed > pageH - 15) { addFooter(); doc.addPage(); y = m; return true; }
+              return false;
+            }
+
+            // Header
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30, 64, 175);
+            doc.text('Thinker Toolbox \u2014 Battery Optimiser Report', m, y + 5);
+            y += 10;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(100);
+            doc.text('Generated: ' + dateStr, m, y);
+            y += 6;
+            doc.setDrawColor(200);
+            doc.line(m, y, pageW - m, y);
+            y += 6;
+
+            // Input Summary
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30);
+            doc.text('Your Setup', m, y);
+            y += 6;
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(50);
+            const inputs = [
+              ['Tariff', this.strategy.name],
+              ['Solar System', this.solarKwp + ' kWp'],
+              ['Battery Capacity', this.batteryKwh + ' kWh'],
+              ['Daily Usage', this.dailyUsage + ' kWh'],
+              ['Home Pattern', this.homePattern === 'all-day' ? 'Home all day' : this.homePattern === 'out-work' ? 'Out at work' : 'Mixed'],
+              ['EV', this.hasEV ? 'Yes' : 'No']
+            ];
+            inputs.forEach(([label, val]) => {
+              doc.setFont('helvetica', 'bold'); doc.text(label + ':', m, y);
+              doc.setFont('helvetica', 'normal'); doc.text(val, m + 50, y);
+              y += 5;
+            });
+            y += 4;
+
+            // Strategy
+            checkPage(30);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30);
+            doc.text('Optimal Strategy', m, y);
+            y += 6;
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(50);
+            const lines = doc.splitTextToSize(this.strategy.summary, pageW - 2 * m);
+            doc.text(lines, m, y);
+            y += lines.length * 4 + 4;
+
+            // Rates
+            checkPage(20);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Off-Peak Rate: ' + this.strategy.cheapRate + 'p/kWh', m, y); y += 5;
+            doc.text('Peak Rate: ' + this.strategy.peakRate + 'p/kWh', m, y); y += 5;
+            if (this.strategy.exportRate) {
+              doc.text('Export Rate: ' + this.strategy.exportRate + 'p/kWh', m, y); y += 5;
+            }
+            y += 3;
+
+            // Windows
+            checkPage(20);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Charge: ' + this.strategy.chargeWindow, m, y); y += 5;
+            doc.text('Discharge: ' + this.strategy.dischargeWindow, m, y); y += 5;
+            y += 3;
+
+            // Daily Profit
+            checkPage(20);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(30, 128, 30);
+            doc.text('Daily Profit: \u00a3' + this.dailyProfit.toFixed(2), m, y);
+            y += 6;
+            doc.setTextColor(30, 64, 175);
+            doc.text('Annual Profit: \u00a3' + this.annualProfit.toFixed(0), m, y);
+            y += 8;
+
+            // Breakdown
+            checkPage(30);
+            doc.setFontSize(10);
+            doc.setTextColor(50);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Savings Breakdown', m, y); y += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(9);
+            const breakdown = [
+              ['Charge cost (' + this.batteryKwh + ' kWh x ' + this.strategy.cheapRate + 'p)', '\u00a3' + this.chargeCost.toFixed(2)],
+              ['Discharge value (' + this.usableKwh.toFixed(1) + ' kWh x ' + this.strategy.peakRate + 'p)', '\u00a3' + this.dischargeValue.toFixed(2)],
+              ['Daily profit', '\u00a3' + this.dailyProfit.toFixed(2)],
+              ['Annual profit', '\u00a3' + this.annualProfit.toFixed(0)],
+              ['Extra vs solar-only (no grid charging)', '\u00a3' + this.extraVsSolarOnly.toFixed(0)]
+            ];
+            breakdown.forEach(([label, val]) => {
+              doc.setFont('helvetica', 'bold'); doc.text(label + ':', m, y);
+              doc.setFont('helvetica', 'normal'); doc.text(val, m + 100, y);
+              y += 5;
+            });
+            y += 4;
+
+            // Payback
+            checkPage(20);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(50);
+            doc.text('Battery Payback: \u00a3' + this.batteryCost.toFixed(0) + ' cost / \u00a3' + (this.annualProfit + this.annualSolarSavings).toFixed(0) + ' annual benefit = ' + this.paybackYears.toFixed(1) + ' years', m, y);
+
+            addFooter();
+            doc.save('thinker-toolbox-battery-optimiser-report.pdf');
+          } catch (err) {
+            alert('Failed to generate PDF. Please check your internet connection.');
+          } finally {
+            this.pdfLoading = false;
+          }
+        }
+      };
+    }
+  </script>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+    </div>
+
+  <!-- Cookie Consent Banner -->
+  <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
+       class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
+    <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <div class="flex gap-2 shrink-0">
+        <button @click="gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' }); localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const consent = localStorage.getItem('cookieConsent');
+    if (consent === 'accepted') {
+      gtag('consent', 'update', {
+        'ad_storage': 'granted',
+        'ad_user_data': 'granted',
+        'ad_personalization': 'granted',
+        'analytics_storage': 'granted'
+      });
+    }
+  })();
+  </script>
+</body>
+</html>
