@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — Thinker Toolbox</title>
+  <meta name="description" content="Contact Thinker Toolbox — report bugs, suggest new tools, or ask questions about our free online calculators and utilities.">
+  <meta property="og:title" content="Contact Us — Thinker Toolbox">
+  <meta property="og:description" content="Get in touch with the Thinker Toolbox team.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" x-data="{ darkMode: false }" x-init="const s = localStorage.getItem('darkMode'); if (s === 'true' || (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) { darkMode = true; document.documentElement.classList.add('dark'); }">
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+      <h1 class="text-xl md:text-2xl font-bold">✉️ Contact Us</h1>
+      <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); document.documentElement.classList.toggle('dark', darkMode)" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <span x-text="darkMode ? '☀️' : '🌙'" class="text-xl"></span>
+      </button>
+    </div>
+
+    <a href="index.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline mb-6">← Back to all tools</a>
+
+    <div class="space-y-4 md:space-y-6">
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Get in Touch</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-3">We'd love to hear from you! Whether you've found a bug, have a suggestion for a new tool, or just want to say hello, drop us a line.</p>
+        <p class="text-gray-600 dark:text-gray-300">📧 <a href="mailto:support@thinkertoolbox.com" class="text-blue-600 dark:text-cyan-400 hover:underline font-medium">support@thinkertoolbox.com</a></p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">What Can We Help With?</h2>
+        <div class="space-y-3">
+          <div class="flex gap-3 items-start">
+            <span class="text-xl">🐛</span>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-gray-100">Bug Reports</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Found a tool that's not working right? Let us know the tool name, what you entered, and what went wrong. Screenshots help too.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <span class="text-xl">💡</span>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-gray-100">Feature Requests</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Got an idea for a new calculator, solver, or utility? We're always building new tools and would love to hear what you need.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <span class="text-xl">📊</span>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-gray-100">Calculation Questions</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">If a calculator result doesn't match your expectations, we're happy to explain the methodology and check if something needs fixing.</p>
+            </div>
+          </div>
+          <div class="flex gap-3 items-start">
+            <span class="text-xl">💬</span>
+            <div>
+              <p class="font-medium text-gray-900 dark:text-gray-100">General Feedback</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Tells us what you love, what you'd improve, or what's missing. We read every message.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Response Time</h2>
+        <p class="text-gray-600 dark:text-gray-300">We're a small team and we do this in our spare time, so please allow a few days for a response. We read every email and we'll get back to you as soon as we can.</p>
+      </div>
+
+      <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4 md:p-6 border border-yellow-200 dark:border-yellow-800">
+        <h2 class="text-lg md:text-xl font-semibold mb-3 text-yellow-800 dark:text-yellow-200">⚠️ Please Note</h2>
+        <div class="text-yellow-800 dark:text-yellow-200 space-y-2">
+          <p>Our calculators provide estimates for illustration purposes only — they are <strong>not financial advice</strong>.</p>
+          <p>If you need professional financial advice, please consult a qualified financial adviser. We cannot provide personalised financial recommendations via email.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Other Pages</h2>
+        <div class="flex flex-wrap gap-3">
+          <a href="about.html" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition">About Thinker Toolbox</a>
+          <a href="privacy-policy.html" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition">Privacy Policy</a>
+          <a href="terms-of-service.html" class="px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition">Terms of Service</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-8 flex flex-wrap justify-center gap-x-3 gap-y-1">
+      <a href="about.html" class="hover:underline">About</a>
+      <span>·</span>
+      <a href="privacy-policy.html" class="hover:underline">Privacy Policy</a>
+      <span>·</span>
+      <a href="terms-of-service.html" class="hover:underline">Terms of Service</a>
+      <span>·</span>
+      <a href="contact.html" class="hover:underline font-semibold">Contact</a>
+    </div>
+  </div>
+
+</body>
+</html>

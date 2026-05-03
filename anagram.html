@@ -2,35 +2,6 @@
 <html lang="en">
 <head>
   <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied',
-    'functionality_storage': 'denied',
-    'personalization_storage': 'denied',
-    'security_storage': 'granted'
-  });
-</script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
-     crossorigin="anonymous"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline.">
-  <meta name="keywords" content="free anagram solver, word unscrambler, anagram finder, Scrabble anagram, letter rearranger, word puzzle solver, online anagram, free word tool">
-  <meta property="og:title" content="Anagram Solver — Thinker Toolbox">
-  <meta property="og:description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Anagram Solver — Thinker Toolbox">
-  <meta name="twitter:description" content="Free anagram solver — unscramble letters to find all valid words with Scrabble scores. Works offline.">
-  <title>Anagram Solver — Thinker Toolbox</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class' };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
@@ -115,7 +86,7 @@
 
     <!-- Footer -->
     <div class="mt-6 md:mt-8 pt-4 border-t border-gray-100 dark:border-gray-700">
-      <a href="index.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a> · <a href="about.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+      <a href="index.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a> · <a href="about.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
   </div>
 
@@ -232,24 +203,6 @@
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-        <button @click="gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' }); localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
-        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
-                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-  (function() {
-    const consent = localStorage.getItem('cookieConsent');
-    if (consent === 'accepted') {
-      gtag('consent', 'update', {
-        'ad_storage': 'granted',
-        'ad_user_data': 'granted',
-        'ad_personalization': 'granted',
-        'analytics_storage': 'granted'
-      });
     }
   })();
   </script>

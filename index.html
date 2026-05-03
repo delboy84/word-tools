@@ -2,35 +2,6 @@
 <html lang="en">
 <head>
   <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-
-  gtag('consent', 'default', {
-    'ad_storage': 'denied',
-    'ad_user_data': 'denied',
-    'ad_personalization': 'denied',
-    'analytics_storage': 'denied',
-    'functionality_storage': 'denied',
-    'personalization_storage': 'denied',
-    'security_storage': 'granted'
-  });
-</script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4139013229012013"
-     crossorigin="anonymous"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities</title>
-  <meta name="description" content="Free online calculators and puzzle solvers. UK mortgage, salary, pension, loan, savings, percentage, date & solar calculators. Wordle, Scrabble, anagram & crossword solvers. Works offline.">
-  <meta name="keywords" content="free online calculator, mortgage calculator, salary calculator, pension calculator, loan calculator, savings calculator, percentage calculator, date calculator, UK bank holidays, solar panel calculator, SEG earnings, Octopus tariff, battery optimiser, Wordle solver, Scrabble finder, anagram solver, crossword solver, colour picker, free tools">
-  <meta property="og:title" content="Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities">
-  <meta property="og:description" content="Free online calculators, puzzle solvers & utilities. Mortgage, salary, pension, solar & more. Works offline. No tracking.">
-  <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities">
-  <meta name="twitter:description" content="Free online calculators, puzzle solvers & utilities. Works offline. No tracking.">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = { darkMode: 'class' };
   </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
@@ -183,7 +154,7 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-8">
-      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a>
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
   </div>
 
@@ -220,24 +191,6 @@
     <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
       <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-        <button @click="gtag('consent', 'update', { 'ad_storage': 'granted', 'ad_user_data': 'granted', 'ad_personalization': 'granted', 'analytics_storage': 'granted' }); localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
-        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
-                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-  (function() {
-    const consent = localStorage.getItem('cookieConsent');
-    if (consent === 'accepted') {
-      gtag('consent', 'update', {
-        'ad_storage': 'granted',
-        'ad_user_data': 'granted',
-        'ad_personalization': 'granted',
-        'analytics_storage': 'granted'
-      });
     }
   })();
   </script>

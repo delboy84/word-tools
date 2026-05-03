@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — Thinker Toolbox</title>
+  <meta name="description" content="Terms of Service for Thinker Toolbox — free online calculators, puzzle solvers & utilities. Understand your rights and responsibilities when using our tools.">
+  <meta property="og:title" content="Terms of Service — Thinker Toolbox">
+  <meta property="og:description" content="Terms of Service for Thinker Toolbox — free online calculators and tools.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" x-data="{ darkMode: false }" x-init="const s = localStorage.getItem('darkMode'); if (s === 'true' || (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) { darkMode = true; document.documentElement.classList.add('dark'); }">
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+      <h1 class="text-xl md:text-2xl font-bold">📜 Terms of Service</h1>
+      <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); document.documentElement.classList.toggle('dark', darkMode)" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <span x-text="darkMode ? '☀️' : '🌙'" class="text-xl"></span>
+      </button>
+    </div>
+
+    <a href="index.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline mb-6">← Back to all tools</a>
+
+    <div class="space-y-4 md:space-y-6">
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Welcome to Thinker Toolbox</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-3">By using Thinker Toolbox (the "Site"), you agree to these Terms of Service. If you do not agree with any part of these terms, please do not use the Site.</p>
+        <p class="text-gray-500 dark:text-gray-400 text-sm">Last updated: May 2026</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">1. What Thinker Toolbox Provides</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p>Thinker Toolbox provides free, browser-based calculators, solvers, and utilities including but not limited to:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li>Financial calculators (mortgage, salary, pension, loan, savings, percentage)</li>
+            <li>Energy &amp; solar calculators (solar ROI, SEG earnings, Octopus tariff comparison, battery optimiser)</li>
+            <li>Date &amp; utility tools (date calculator, tip calculator, cooking converter, Sudoku solver, colour picker)</li>
+            <li>Word puzzle solvers (crossword, anagram, Wordle, Scrabble)</li>
+          </ul>
+          <p>All tools run entirely in your web browser. No data is transmitted to any server.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">2. Not Financial Advice</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p><strong>The calculators on this Site are for illustration and estimation purposes only. They do not constitute financial, tax, legal, or professional advice.</strong></p>
+          <p>Mortgage payments, savings projections, pension estimates, and other financial calculations are approximations based on the figures you provide. Actual amounts may differ depending on your lender's terms, interest rate changes, fees, tax treatment, and other factors not captured by these tools.</p>
+          <p>Always consult a qualified financial adviser, tax professional, or other appropriate expert before making important financial decisions. Do not rely solely on these calculators when considering mortgages, loans, savings, investments, or pensions.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">3. Accuracy &amp; No Warranty</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p>While we strive for accuracy, we make no warranties or guarantees about the results produced by our tools. The tools are provided "as is" and "as available" without warranties of any kind, either express or implied.</p>
+          <p>Specifically:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li>Calculation results may contain errors or inaccuracies.</li>
+            <li>Tax rates, National Insurance thresholds, stamp duty bands, and other regulatory figures may not be up to date.</li>
+            <li>Word puzzle results depend on the dictionary used and may not reflect official competitive word lists.</li>
+            <li>Solar and energy estimates are based on general assumptions and may not reflect your specific circumstances.</li>
+          </ul>
+          <p>You are responsible for verifying any results before relying on them.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">4. Limitation of Liability</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p>To the fullest extent permitted by law, Thinker Toolbox and its creators shall not be liable for any direct, indirect, incidental, special, consequential, or punitive damages arising from your use of the Site or reliance on any results produced by the tools.</p>
+          <p>This includes, but is not limited to, damages for loss of profits, data, goodwill, or other intangible losses resulting from:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li>Inaccurate calculation results.</li>
+            <li>Any errors or bugs in the tools.</li>
+            <li>Any interruption or cessation of the Site.</li>
+            <li>Any decision made based on information provided by the tools.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">5. Intellectual Property</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p>The Site's design, code, and original content are owned by Thinker Toolbox. The word list used in the puzzle solvers is derived from the ENABLE word list (Public Domain).</p>
+          <p>You may not:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li>Copy, modify, or distribute the Site's source code without permission.</li>
+            <li>Use the Site's branding, logos, or design without permission.</li>
+            <li>Scrape or extract data from the Site through automated means.</li>
+          </ul>
+          <p>You may link to the Site and share links to individual tools freely.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">6. Advertising</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p>The Site may display advertisements through Google AdSense. These ads are served by Google and are not endorsed by Thinker Toolbox. We are not responsible for the content of third-party advertisements.</p>
+          <p>You can control personalised advertising through the cookie consent banner on each page or through your <a href="https://adssettings.google.com/" class="text-blue-600 dark:text-cyan-400 hover:underline" target="_blank" rel="noopener">Google Ad Settings</a>.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">7. Availability</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-3">Thinker Toolbox is hosted on GitHub Pages. While we aim for maximum uptime, we do not guarantee uninterrupted availability. The Site may be temporarily unavailable due to maintenance, updates, or circumstances beyond our control.</p>
+        <p class="text-gray-600 dark:text-gray-300">Because the tools are designed to work offline via a Service Worker, most functionality remains available even if the hosting server is temporarily unreachable — as long as you have previously visited the page.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">8. Changes to These Terms</h2>
+        <p class="text-gray-600 dark:text-gray-300">We may update these Terms of Service from time to time. Changes will be posted on this page with an updated "Last updated" date. Your continued use of the Site after any changes constitutes acceptance of the revised terms.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">9. Contact</h2>
+        <p class="text-gray-600 dark:text-gray-300">If you have any questions about these Terms of Service, please contact us at <a href="mailto:support@thinkertoolbox.com" class="text-blue-600 dark:text-cyan-400 hover:underline">support@thinkertoolbox.com</a>.</p>
+      </div>
+
+    </div>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-8 flex flex-wrap justify-center gap-x-3 gap-y-1">
+      <a href="about.html" class="hover:underline">About</a>
+      <span>·</span>
+      <a href="privacy-policy.html" class="hover:underline">Privacy Policy</a>
+      <span>·</span>
+      <a href="terms-of-service.html" class="hover:underline font-semibold">Terms of Service</a>
+      <span>·</span>
+      <a href="contact.html" class="hover:underline">Contact</a>
+    </div>
+  </div>
+
+</body>
+</html>

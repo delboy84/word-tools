@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Thinker Toolbox</title>
+  <meta name="description" content="Privacy Policy for Thinker Toolbox — how we handle your data, cookies, and privacy when using our free online calculators and tools.">
+  <meta property="og:title" content="Privacy Policy — Thinker Toolbox">
+  <meta property="og:description" content="Privacy Policy for Thinker Toolbox — your data stays in your browser.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="css/shared.css">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300" x-data="{ darkMode: false }" x-init="const s = localStorage.getItem('darkMode'); if (s === 'true' || (s === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) { darkMode = true; document.documentElement.classList.add('dark'); }">
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 md:mb-8">
+      <h1 class="text-xl md:text-2xl font-bold">🔒 Privacy Policy</h1>
+      <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); document.documentElement.classList.toggle('dark', darkMode)" class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+        <span x-text="darkMode ? '☀️' : '🌙'" class="text-xl"></span>
+      </button>
+    </div>
+
+    <a href="index.html" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline mb-6">← Back to all tools</a>
+
+    <div class="space-y-4 md:space-y-6">
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Overview</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-3">Thinker Toolbox is committed to protecting your privacy. This policy explains what data we collect, how we use it, and what choices you have.</p>
+        <p class="text-gray-600 dark:text-gray-300"><strong>The short version:</strong> Your calculator inputs stay in your browser and are never sent to any server. We use Google AdSense for advertising, which may set cookies for personalised ads. You can accept or reject personalised advertising using the cookie banner on any page.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Data We Collect</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <h3 class="font-medium text-gray-900 dark:text-gray-100">Calculator &amp; Tool Inputs</h3>
+          <p>All calculations run entirely in your browser. The numbers you type into mortgage, salary, pension, loan, savings, and other calculators never leave your device. We do not collect, store, or transmit your financial data, personal details, or any other information you enter into our tools.</p>
+
+          <h3 class="font-medium text-gray-900 dark:text-gray-100 mt-4">PDF Reports</h3>
+          <p>Some calculators can generate PDF reports. These are created entirely within your browser using JavaScript. The report data is not sent to any server — the PDF file is generated locally and downloaded directly to your device.</p>
+
+          <h3 class="font-medium text-gray-900 dark:text-gray-100 mt-4">Word Puzzle Data</h3>
+          <p>The word puzzle solvers (Crossword, Anagram, Wordle, Scrabble) use a built-in dictionary of over 168,000 words. All searches run locally in your browser. We do not track which words you search for.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Cookies &amp; Advertising</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <h3 class="font-medium text-gray-900 dark:text-gray-100">Essential Cookies</h3>
+          <p>We use a small number of essential cookies:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li><strong>Dark mode preference</strong> — remembers whether you prefer light or dark mode (stored in localStorage).</li>
+            <li><strong>Cookie consent choice</strong> — remembers whether you accepted or rejected personalised ads.</li>
+            <li><strong>Service Worker cache</strong> — enables offline functionality by caching tool pages and data for use without an internet connection.</li>
+          </ul>
+
+          <h3 class="font-medium text-gray-900 dark:text-gray-100 mt-4">Google AdSense</h3>
+          <p>We use Google AdSense to display advertisements. Google may set cookies to serve personalised ads based on your browsing history across websites. You can control this:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li>Use the cookie banner on our site to accept or reject personalised advertising.</li>
+            <li>Visit <a href="https://adssettings.google.com/" class="text-blue-600 dark:text-cyan-400 hover:underline" target="_blank" rel="noopener">Google Ad Settings</a> to manage your ad preferences globally.</li>
+            <li>Visit <a href="https://policies.google.com/technologies/ads" class="text-blue-600 dark:text-cyan-400 hover:underline" target="_blank" rel="noopener">Google's advertising policies</a> for more information on how Google uses cookies for ads.</li>
+          </ul>
+
+          <h3 class="font-medium text-gray-900 dark:text-gray-100 mt-4">Third-Party CDN</h3>
+          <p>We load Tailwind CSS and Alpine.js from jsDelivr CDN. These services may set their own cookies for caching and analytics. We do not control these cookies.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Offline Functionality</h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-3">Thinker Toolbox uses a Service Worker to cache pages and data so that tools work offline. This cache is stored locally on your device and is not accessible to us. You can clear this cache by clearing your browser's site data for <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded text-sm">delboy84.github.io</code>.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Analytics</h2>
+        <p class="text-gray-600 dark:text-gray-300">We use Google Analytics to understand how visitors use the site. Analytics data is anonymised where possible. Analytics cookies are only set if you accept personalised advertising via the cookie banner. You can opt out of Google Analytics by installing the <a href="https://tools.google.com/dlpage/gaoptout" class="text-blue-600 dark:text-cyan-400 hover:underline" target="_blank" rel="noopener">Google Analytics opt-out browser add-on</a>.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Your Rights</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-2">
+          <p>Under GDPR and UK data protection law, you have the right to:</p>
+          <ul class="list-disc list-inside space-y-1 ml-2">
+            <li><strong>Access</strong> — request a copy of any personal data we hold about you.</li>
+            <li><strong>Rectification</strong> — request correction of any inaccurate personal data.</li>
+            <li><strong>Erasure</strong> — request deletion of any personal data we hold about you.</li>
+            <li><strong>Restriction</strong> — request that we limit processing of your personal data.</li>
+            <li><strong>Objection</strong> — object to processing of your personal data.</li>
+            <li><strong>Data portability</strong> — receive your data in a structured, machine-readable format.</li>
+          </ul>
+          <p class="mt-2">Since we do not collect personal data through our tools, most of these rights are limited to any data collected through Google AdSense cookies. To exercise your rights regarding Google's data processing, please use the <a href="https://adssettings.google.com/" class="text-blue-600 dark:text-cyan-400 hover:underline" target="_blank" rel="noopener">Google Ad Settings</a> page.</p>
+          <p>To exercise any of these rights, please contact us at <a href="mailto:support@thinkertoolbox.com" class="text-blue-600 dark:text-cyan-400 hover:underline">support@thinkertoolbox.com</a>.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Children's Privacy</h2>
+        <p class="text-gray-600 dark:text-gray-300">Thinker Toolbox is not directed at children under 13. We do not knowingly collect personal information from children. If you believe a child has provided personal data to us, please contact us and we will take steps to delete it.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Changes to This Policy</h2>
+        <p class="text-gray-600 dark:text-gray-300">We may update this Privacy Policy from time to time. Any changes will be posted on this page with an updated "Last updated" date. Your continued use of the site after any changes constitutes acceptance of the updated policy.</p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Contact</h2>
+        <p class="text-gray-600 dark:text-gray-300">If you have any questions about this Privacy Policy, please contact us at <a href="mailto:support@thinkertoolbox.com" class="text-blue-600 dark:text-cyan-400 hover:underline">support@thinkertoolbox.com</a>.</p>
+        <p class="text-gray-500 dark:text-gray-400 mt-3 text-sm">Last updated: May 2026</p>
+      </div>
+
+    </div>
+
+    <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-8 flex flex-wrap justify-center gap-x-3 gap-y-1">
+      <a href="about.html" class="hover:underline">About</a>
+      <span>·</span>
+      <a href="privacy-policy.html" class="hover:underline font-semibold">Privacy Policy</a>
+      <span>·</span>
+      <a href="terms-of-service.html" class="hover:underline">Terms of Service</a>
+      <span>·</span>
+      <a href="contact.html" class="hover:underline">Contact</a>
+    </div>
+  </div>
+
+</body>
+</html>
