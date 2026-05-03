@@ -12,7 +12,10 @@
   <meta name="twitter:title" content="Crossword Solver — Thinker Toolbox">
   <meta name="twitter:description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline.">
   <title>Crossword Solver — Thinker Toolbox</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = { darkMode: 'class' };
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
   <link rel="manifest" href="manifest.json">
@@ -85,7 +88,10 @@
 
   <script src="js/wordlist.js"></script>
   <script src="js/word-engine.js"></script>
+  <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
+  <script>
     function crossword() {
       return {
         darkMode: false,
@@ -168,6 +174,7 @@
         }
       };
     }
+  </script>
 
   
 

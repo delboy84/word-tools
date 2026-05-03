@@ -15,12 +15,15 @@
   <meta name="description" content="Colour picker with palette generation and WCAG contrast checking. Works offline.">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#3b82f6">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {}
       }
     }
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
     /* Custom range slider styles */
@@ -339,13 +342,16 @@
   <script src="js/colour-engine.js"></script>
 
   <!-- Service Worker Registration -->
+  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
     }
+  </script>
 
   <!-- Alpine.js App -->
+  <script>
     function colourPicker() {
       return {
         // State
@@ -647,6 +653,7 @@
         }
       };
     }
+  </script>
 
   
 

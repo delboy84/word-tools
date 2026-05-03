@@ -12,7 +12,10 @@
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities">
   <meta name="twitter:description" content="Free online calculators, puzzle solvers & utilities. Works offline. No tracking.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
     tailwind.config = { darkMode: 'class' };
+  </script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
   <link rel="manifest" href="manifest.json">
@@ -233,7 +236,7 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-8">
-      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
   </div>
 
@@ -243,6 +246,7 @@
     <span x-show="!darkMode" class="text-xl">🌙</span>
   </button>
 
+  <script>
     function landing() {
       return {
         darkMode: false,
@@ -261,6 +265,7 @@
       };
     }
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+  </script>
 
   <!-- Cookie Consent Banner -->
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
