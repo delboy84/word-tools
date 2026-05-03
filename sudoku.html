@@ -346,7 +346,62 @@
       Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
 
-  <!-- Cookie Consent Banner -->
+  
+
+    <!-- Editorial Content -->
+    <div class="mt-8 space-y-4">
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">How to Use This Sudoku Solver</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-2">
+          <ol class="list-decimal list-inside space-y-2 ml-2">
+            <li><strong>Enter your puzzle</strong> — Type the numbers from your Sudoku puzzle into the grid. Use the number keys 1–9 for given digits; leave empty cells blank.</li>
+            <li><strong>Choose the grid size</strong> — Supports 4×4, 9×9, and 16×16 puzzles.</li>
+            <li><strong>Hit Solve</strong> — The solver finds the solution using constraint propagation and backtracking. Most 9×9 puzzles solve instantly.</li>
+            <li><strong>View the solution</strong> — The solved numbers appear in a different colour so you can see which cells were filled in.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Use Cases</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-3">
+          <p><strong>Stuck on a puzzle?</strong> We've all been there — you've spent 20 minutes on a Sudoku and hit a wall. Enter what you've got and the solver will complete it. You can also use it to check a single cell you're unsure about rather than revealing the whole solution.</p>
+          <p><strong>Learning strategies.</strong> By comparing the solver's solution to your partial solution, you can see where you went wrong and learn new solving techniques. The solver uses pure logic (constraint propagation) before falling back to trial-and-error, so you can see which cells are logically determined vs guessed.</p>
+          <p><strong>Solving 16×16 puzzles.</strong> Hexadecimal Sudokus (using 0–9 and A–F) are much harder to solve by hand. This solver handles them effortlessly, which is useful when you've spent hours on a puzzle that has you beaten.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Frequently Asked Questions</h2>
+        <div class="space-y-3">
+          <details class="group">
+            <summary class="cursor-pointer font-medium text-gray-900 dark:text-gray-100 py-2">Can every Sudoku be solved?</summary>
+            <p class="text-gray-600 dark:text-gray-300 pl-4 pb-2">Only valid Sudokus have a unique solution. If you enter an invalid puzzle (contradictory clues), the solver will tell you it can't be solved. If a puzzle has multiple solutions, the solver will find one of them and indicate that it's not unique.</p>
+          </details>
+          <details class="group">
+            <summary class="cursor-pointer font-medium text-gray-900 dark:text-gray-100 py-2">What's the difference between 4×4, 9×9, and 16×16?</summary>
+            <p class="text-gray-600 dark:text-gray-300 pl-4 pb-2">4×4 uses numbers 1–4 in 2×2 boxes — good for beginners and children. 9×9 is the standard puzzle with numbers 1–9 in 3×3 boxes. 16×16 uses 0–9 and A–F in 4×4 boxes — much harder and more time-consuming to solve by hand.</p>
+          </details>
+          <details class="group">
+            <summary class="cursor-pointer font-medium text-gray-900 dark:text-gray-100 py-2">Does the solver work offline?</summary>
+            <p class="text-gray-600 dark:text-gray-300 pl-4 pb-2">Yes — once you've visited the page, it works offline. The solving algorithm runs entirely in your browser with no server needed. Handy for solving puzzles on a train or plane.</p>
+          </details>
+          <details class="group">
+            <summary class="cursor-pointer font-medium text-gray-900 dark:text-gray-100 py-2">Is my data private?</summary>
+            <p class="text-gray-600 dark:text-gray-300 pl-4 pb-2">Yes — the solver runs entirely in your browser. Your puzzle data never leaves your device.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-gray-700">
+        <h2 class="text-lg md:text-xl font-semibold mb-3">Why Use This Sudoku Solver?</h2>
+        <div class="text-gray-600 dark:text-gray-300 space-y-2">
+          <p>It handles 4×4, 9×9, and 16×16 puzzles, solves instantly, and works offline. No pop-ups, no "download our app" banners, no tracking. Just a clean solver that does its job. The 16×16 support sets it apart from most online solvers that only handle standard 9×9.</p>
+        </div>
+      </div>
+    </div>
+
+<!-- Cookie Consent Banner -->
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
