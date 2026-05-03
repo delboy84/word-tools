@@ -1,7 +1,393 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-  <script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free UK SEG earnings calculator. Compare Smart Export Guarantee rates from Octopus, EDF, British Gas and more. See how much you earn exporting solar electricity.">
+  <meta name="keywords" content="free SEG calculator, smart export guarantee, solar export earnings, SEG rates comparison, Octopus Outgoing tariff, solar export tariff UK 2025 2026, free online calculator">
+  <meta property="og:title" content="Free UK SEG Earnings Calculator — Smart Export Guarantee — Thinker Toolbox">
+  <meta property="og:description" content="Free UK SEG earnings calculator. Compare Smart Export Guarantee rates from Octopus, EDF, British Gas and more. See how much you earn exporting solar electricity.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Free UK SEG Earnings Calculator — Smart Export Guarantee — Thinker Toolbox">
+  <meta name="twitter:description" content="Free UK SEG earnings calculator. Compare Smart Export Guarantee rates and maximise your solar export income.">
+  <title>Free UK SEG Earnings Calculator — Smart Export Guarantee — Thinker Toolbox</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="segApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">⚡ SEG Earnings Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Smart Export Guarantee rates compared</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'earnings'" :class="tab === 'earnings' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">💰 SEG Earnings</button>
+      <button @click="tab = 'deemed'" :class="tab === 'deemed' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📊 Deemed vs Actual</button>
+      <button @click="tab = 'battery'" :class="tab === 'battery' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">🔋 With Battery</button>
+    </div>
+
+    <!-- SEG EARNINGS TAB -->
+    <div x-show="tab === 'earnings'" x-transition>
+      <!-- Solar Generation -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Solar Generation</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="annualGen" @input="calc()" step="100" min="0" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal" placeholder="3800">
+          <span class="text-sm text-gray-400">kWh</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <a href="solar-calculator.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Need help? Use our Solar Calculator →</a>
+        </div>
+      </div>
+
+      <!-- Self-Consumption -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Self-Consumption Ratio</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="selfConsumption" @input="calc()" step="5" min="0" max="100" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal" placeholder="40">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">What % of solar you use yourself (typical: 40% without battery, 80% with battery)</div>
+      </div>
+
+      <!-- Exported kWh -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between">
+          <div class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Exported kWh (what you sell)</div>
+          <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="fmtNum0(exportedKwh) + ' kWh'"></div>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">Generation × (1 − Self-consumption)</div>
+      </div>
+
+      <!-- SEG Rate Comparison -->
+      <div x-show="exportedKwh > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">SEG Rate Comparison</h2>
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Provider</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Rate</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Annual</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">25-Year</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="p in providers" :key="p.name">
+                <tr class="border-b border-gray-100 dark:border-gray-700" :class="p.best ? 'bg-green-50 dark:bg-green-900/10' : ''">
+                  <td class="py-2 text-gray-900 dark:text-gray-100 font-medium" x-text="p.name + (p.best ? ' ⭐' : '')"></td>
+                  <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="p.rate + 'p'"></td>
+                  <td class="py-2 text-right font-medium" :class="p.best ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'" x-text="'£' + fmtNum(p.annual)"></td>
+                  <td class="py-2 text-right font-bold" :class="p.best ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'" x-text="'£' + fmtNum0(p.year25)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+          💡 Octopus Outgoing offers the best SEG rate at 15p/kWh. 25-year projections assume 2% annual rate increase. Rates correct as of 2025 — check provider websites for current rates.
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div x-show="exportedKwh > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Annual Earnings by Provider</h2>
+        <div class="space-y-1.5">
+          <template x-for="p in providers" :key="p.name">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-24 text-right shrink-0 truncate" x-text="p.name"></span>
+              <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+                <div class="bar-chart-bar h-full rounded-full" :class="p.best ? 'bg-green-500 dark:bg-green-400' : 'bg-blue-500 dark:bg-cyan-500'" :style="'width:' + p.barPct + '%'"></div>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum0(p.annual)"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Export PDF -->
+      <div x-show="exportedKwh > 0" class="mb-3 md:mb-4">
+        <button @click="exportPDF()" :disabled="pdfLoading" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span x-show="!pdfLoading">📄 Export PDF</span>
+          <span x-show="pdfLoading">Generating...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- DEEMED VS ACTUAL TAB -->
+    <div x-show="tab === 'deemed'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Deemed vs Actual Export</h2>
+        <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <p><strong class="text-gray-900 dark:text-gray-100">Deemed Export:</strong> Some SEG providers calculate your export based on a fixed assumption — typically 50% of your generation. This comes from the old MPAN-based system used before smart meters were widespread. You get paid on this "deemed" amount regardless of how much you actually export.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Actual Metered Export:</strong> With a smart meter (SMETS2), your export is measured precisely. You get paid only for what you actually send to the grid.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Which is better?</strong> If you use most of your solar yourself (high self-consumption), deemed is usually better — you get paid for 50% even if you only export 30%. If you export most of your solar (low self-consumption), actual metered export benefits you more.</p>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Solar Generation (kWh)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="deemedGen" @input="calcDeemed()" step="100" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="3800">
+          <span class="text-sm text-gray-400">kWh</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Actual Self-Consumption (%)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="deemedSelfCons" @input="calcDeemed()" step="5" min="0" max="100" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="40">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">SEG Rate (p/kWh)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="deemedRate" @input="calcDeemed()" step="0.5" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="15">
+          <span class="text-sm text-gray-400">p</span>
+        </div>
+      </div>
+
+      <div x-show="deemedGen > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Comparison</h2>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Deemed (50%)</div>
+            <div class="text-xl font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(deemedEarnings)"></div>
+            <div class="text-xs text-gray-400 mt-1" x-text="fmtNum0(deemedExportKwh) + ' kWh exported'"></div>
+          </div>
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">Actual Metered</div>
+            <div class="text-xl font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(actualEarnings)"></div>
+            <div class="text-xs text-gray-400 mt-1" x-text="fmtNum0(actualExportKwh) + ' kWh exported'"></div>
+          </div>
+        </div>
+        <div class="text-xs bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          <span x-show="deemedEarnings > actualEarnings">🟢 <strong>Deemed export wins</strong> — you earn £<span x-text="fmtNum(deemedEarnings - actualEarnings)"></span> more per year because your self-consumption is above 50%.</span>
+          <span x-show="actualEarnings > deemedEarnings">🟢 <strong>Actual metered wins</strong> — you earn £<span x-text="fmtNum(actualEarnings - deemedEarnings)"></span> more per year because you export more than 50%.</span>
+          <span x-show="Math.abs(deemedEarnings - actualEarnings) < 0.01">⚖️ <strong>It's a tie</strong> — your self-consumption is exactly 50%.</span>
+        </div>
+        <div class="mt-2 text-xs text-gray-500 dark:text-gray-400 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2">
+          💡 Old FIT installations often use deemed export. If you have a smart meter and high self-consumption (e.g. with a battery), you may earn more on deemed. But most new SEG tariffs require a smart meter and pay on actual readings.
+        </div>
+      </div>
+    </div>
+
+    <!-- WITH BATTERY TAB -->
+    <div x-show="tab === 'battery'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Solar Generation (kWh)</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="batGen" @input="calcBat()" step="100" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="3800">
+          <span class="text-sm text-gray-400">kWh</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Self-Consumption Without Battery</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="batSelfConsNoBat" @input="calcBat()" step="5" min="20" max="60" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="40">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Self-Consumption With Battery</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="batSelfConsWithBat" @input="calcBat()" step="5" min="60" max="95" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="80">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Battery Cost</label>
+          <div class="flex items-center gap-1">
+            <span class="text-gray-400">£</span>
+            <input type="number" x-model.number="batteryCostInput" @input="calcBat()" step="100" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="5000">
+          </div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">SEG Rate</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="batSegRate" @input="calcBat()" step="0.5" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="15">
+            <span class="text-sm text-gray-400">p</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4">
+          <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Elec. Import Rate</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="batElecRate" @input="calcBat()" step="0.5" min="0" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="24.5">
+            <span class="text-sm text-gray-400">p</span>
+          </div>
+        </div>
+      </div>
+
+      <div x-show="batGen > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Battery Impact on SEG Earnings</h2>
+        <div class="grid grid-cols-3 gap-2 text-center mb-2">
+          <div></div>
+          <div class="text-xs font-semibold text-gray-500 dark:text-gray-400">No Battery</div>
+          <div class="text-xs font-semibold text-blue-600 dark:text-cyan-400">With Battery</div>
+        </div>
+        <div class="space-y-2">
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Self-Consumed</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum0(batNoBat.selfConsumed) + ' kWh'"></div>
+            <div class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="fmtNum0(batWithBat.selfConsumed) + ' kWh'"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Exported</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum0(batNoBat.exported) + ' kWh'"></div>
+            <div class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="fmtNum0(batWithBat.exported) + ' kWh'"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">SEG Earnings</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(batNoBat.segEarnings)"></div>
+            <div class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(batWithBat.segEarnings)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left">Import Savings</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(batNoBat.importSavings)"></div>
+            <div class="text-sm font-bold text-blue-600 dark:text-cyan-400" x-text="'£' + fmtNum(batWithBat.importSavings)"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center border-t border-gray-200 dark:border-gray-600 pt-2">
+            <div class="text-xs text-gray-500 dark:text-gray-400 text-left font-medium">Total Annual</div>
+            <div class="text-sm font-bold text-gray-900 dark:text-gray-100" x-text="'£' + fmtNum(batNoBat.totalSavings)"></div>
+            <div class="text-sm font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(batWithBat.totalSavings)"></div>
+          </div>
+        </div>
+
+        <div class="mt-3 text-xs bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          💡 Battery increases total annual savings by <strong class="text-green-600 dark:text-green-400" x-text="'£' + fmtNum(batWithBat.totalSavings - batNoBat.totalSavings)"></strong>, but reduces SEG earnings by <strong class="text-red-500" x-text="'£' + fmtNum(batNoBat.segEarnings - batWithBat.segEarnings)"></strong> because you export less. The extra import savings more than compensate.
+        </div>
+        <div class="mt-2 text-xs bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          🔋 Battery payback from additional savings: <strong class="text-blue-600 dark:text-cyan-400" x-text="batteryPaybackText"></strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="text-xs text-gray-400 dark:text-gray-600 mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      ⚠️ For illustration only, not financial advice. SEG rates change regularly — check provider websites for current rates. Actual earnings depend on your system, tariff and usage patterns.
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+    function segApp() {
+      return {
+        darkMode: false,
+        tab: 'earnings',
+        annualGen: null,
+        selfConsumption: 40,
+        pdfLoading: false,
+        exportedKwh: 0,
+        providers: [],
+        // Deemed vs actual
+        deemedGen: null,
+        deemedSelfCons: 40,
+        deemedRate: 15,
+        deemedEarnings: 0,
+        actualEarnings: 0,
+        deemedExportKwh: 0,
+        actualExportKwh: 0,
+        // Battery
+        batGen: null,
+        batSelfConsNoBat: 40,
+        batSelfConsWithBat: 80,
+        batteryCostInput: 5000,
+        batSegRate: 15,
+        batElecRate: 24.5,
+        batNoBat: { selfConsumed: 0, exported: 0, segEarnings: 0, importSavings: 0, totalSavings: 0 },
+        batWithBat: { selfConsumed: 0, exported: 0, segEarnings: 0, importSavings: 0, totalSavings: 0 },
+        batteryPaybackText: '—',
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.calc();
+          this.deemedGen = this.annualGen;
+          this.batGen = this.annualGen;
+          this.calcDeemed();
+          this.calcBat();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) { if (n == null || isNaN(n)) return '0.00'; return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+        fmtNum0(n) { if (n == null || isNaN(n)) return '0'; return Math.round(Number(n)).toLocaleString('en-GB'); },
+
+        calc() {
+          const gen = parseFloat(this.annualGen) || 0;
+          const sc = parseFloat(this.selfConsumption) / 100;
+          this.exportedKwh = gen * (1 - sc);
+
+          const rateData = [
+            { name: 'Octopus Outgoing', rate: 15 },
+            { name: 'British Gas', rate: 6.5 },
+            { name: 'E.ON', rate: 5.5 },
+            { name: 'EDF', rate: 5 },
+            { name: 'Shell Energy', rate: 5 },
+            { name: 'OVO', rate: 4 }
+          ];
+
+          const maxAnnual = this.exportedKwh * (rateData[0].rate / 100);
+          this.providers = rateData.map(p => {
+            const annual = this.exportedKwh * (p.rate / 100);
+            // 25-year with 2% increase
+            let year25 = 0;
+            for (let y = 0; y < 25; y++) {
+              year25 += this.exportedKwh * (p.rate * Math.pow(1.02, y) / 100);
+            }
+            return {
+              ...p,
+              annual,
+              year25,
+              best: p.rate === Math.max(...rateData.map(r => r.rate)),
+              barPct: maxAnnual > 0 ? (annual / maxAnnual * 100) : 0
+            };
           });
         },
 
@@ -112,10 +498,9 @@
         }
       };
     }
-  </script>
 
   <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
   </div>
 
   
@@ -182,10 +567,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

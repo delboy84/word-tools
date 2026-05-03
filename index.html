@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities</title>
+  <meta name="description" content="Free online calculators and puzzle solvers. UK mortgage, salary, pension, loan, savings, percentage, date & solar calculators. Wordle, Scrabble, anagram & crossword solvers. Works offline.">
+  <meta name="keywords" content="free online calculator, mortgage calculator, salary calculator, pension calculator, loan calculator, savings calculator, percentage calculator, date calculator, UK bank holidays, solar panel calculator, SEG earnings, Octopus tariff, battery optimiser, Wordle solver, Scrabble finder, anagram solver, crossword solver, colour picker, free tools">
+  <meta property="og:title" content="Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities">
+  <meta property="og:description" content="Free online calculators, puzzle solvers & utilities. Mortgage, salary, pension, solar & more. Works offline. No tracking.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Thinker Toolbox — Free Online Calculators, Puzzle Solvers & Utilities">
+  <meta name="twitter:description" content="Free online calculators, puzzle solvers & utilities. Works offline. No tracking.">
+    tailwind.config = { darkMode: 'class' };
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
   <link rel="manifest" href="manifest.json">
@@ -233,7 +243,6 @@
     <span x-show="!darkMode" class="text-xl">🌙</span>
   </button>
 
-  <script>
     function landing() {
       return {
         darkMode: false,
@@ -252,7 +261,6 @@
       };
     }
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-  </script>
 
   <!-- Cookie Consent Banner -->
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition

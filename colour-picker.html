@@ -1,7 +1,167 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-  <script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline.">
+  <meta name="keywords" content="free colour picker, color picker, palette generator, WCAG contrast checker, complementary colours, triadic, analogous, HEX RGB HSL, online colour tool">
+  <meta property="og:title" content="Free Colour Picker — Thinker Toolbox">
+  <meta property="og:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Colour Picker Utility">
+  <meta name="twitter:description" content="Free colour picker — generate harmonious colour palettes (complementary, triadic, analogous) with WCAG contrast checking. Extract colours from photos. Works offline.">
+  <title>Free Colour Picker — Thinker Toolbox</title>
+  <meta name="description" content="Colour picker with palette generation and WCAG contrast checking. Works offline.">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#3b82f6">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    /* Custom range slider styles */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 1.25rem;
+      border-radius: 0.5rem;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #374151;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 50%;
+      background: white;
+      border: 3px solid #374151;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: grab;
+    }
+    .dark input[type="range"]::-webkit-slider-thumb {
+      border-color: #9ca3af;
+    }
+    .dark input[type="range"]::-moz-range-thumb {
+      border-color: #9ca3af;
+    }
+    input[type="range"]:active::-webkit-slider-thumb { cursor: grabbing; }
+    input[type="range"]:active::-moz-range-thumb { cursor: grabbing; }
+
+    /* Hue slider rainbow */
+    #hue-slider {
+      background: linear-gradient(to right,
+        hsl(0,100%,50%), hsl(30,100%,50%), hsl(60,100%,50%),
+        hsl(90,100%,50%), hsl(120,100%,50%), hsl(150,100%,50%),
+        hsl(180,100%,50%), hsl(210,100%,50%), hsl(240,100%,50%),
+        hsl(270,100%,50%), hsl(300,100%,50%), hsl(330,100%,50%),
+        hsl(360,100%,50%));
+    }
+
+    /* Toast animation */
+    .toast-enter { animation: toastIn 0.3s ease; }
+    .toast-leave { animation: toastOut 0.3s ease forwards; }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(1rem); } }
+
+    /* Colour swatch transition */
+    .swatch-box { transition: background-color 0.15s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300"
+      x-data="colourPicker()" x-init="init()">
+
+  <!-- Toast Notification -->
+  <div x-show="showToast" x-transition:enter="toast-enter" x-transition:leave="toast-leave"
+       class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 px-5 py-3 rounded-lg shadow-xl text-sm font-medium"
+       x-text="toastMessage">
+  </div>
+
+  <!-- Main Container -->
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-3xl md:mx-auto">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <h1 class="text-xl md:text-2xl font-bold flex items-center gap-2">
+        🎨 Colour Picker
+      </h1>
+      <button @click="toggleDarkMode()"
+              class="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition"
+              :aria-label="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-text="darkMode ? '☀️' : '🌙'" class="text-xl"></span>
+      </button>
+    </div>
+
+    <!-- Slider Section + Preview -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-4 md:gap-6 mb-4 md:mb-6">
+
+      <!-- Sliders -->
+      <div class="space-y-4">
+        <!-- Hue -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Hue: <span x-text="hue">217</span>°</label>
+          <input type="range" id="hue-slider" min="0" max="360" step="1" x-model.number="hue"
+                 @input="updateFromSliders()" class="w-full">
+        </div>
+        <!-- Saturation -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Saturation: <span x-text="saturation">91</span>%</label>
+          <input type="range" min="0" max="100" step="1" x-model.number="saturation"
+                 @input="updateFromSliders()"
+                 :style="`background: linear-gradient(to right, hsl(${hue},0%,${lightness}%), hsl(${hue},100%,${lightness}%))`"
+                 class="w-full">
+        </div>
+        <!-- Lightness -->
+        <div>
+          <label class="block text-sm font-medium mb-1">Lightness: <span x-text="lightness">60</span>%</label>
+          <input type="range" min="0" max="100" step="1" x-model.number="lightness"
+                 @input="updateFromSliders()"
+                 :style="`background: linear-gradient(to right, hsl(${hue},${saturation}%,0%), hsl(${hue},${saturation}%,50%), hsl(${hue},${saturation}%,100%))`"
+                 class="w-full">
+        </div>
+      </div>
+
+      <!-- Colour Preview -->
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-full h-28 md:h-36 rounded-xl shadow-inner swatch-box"
+             :style="`background-color: ${baseHex}`">
+          <div class="h-full flex items-end justify-center pb-2"
+               :style="`color: ${bestText}`">
+            <span class="text-lg font-mono font-bold drop-shadow" x-text="baseHex.toUpperCase()"></span>
+          </div>
+        </div>
+
+        <!-- Extract from Image -->
+        <div class="w-full">
+          <button @click="$refs.imageInput.click()"
+                  class="w-full px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-sm flex items-center justify-center gap-2">
+            📷 Extract from Image
+          </button>
+          <input type="file" x-ref="imageInput" accept="image/*" capture="environment" @change="extractFromImage($event)" class="hidden">
+        </div>
+
+        <!-- Extracted Colours -->
+        <div x-show="extractedColours.length > 0" x-transition class="w-full">
+          <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Extracted colours — tap to use:</p>
+          <div class="flex gap-1.5 flex-wrap">
+            <template x-for="(c, i) in extractedColours" :key="i">
+              <button @click="applyExtractedColour(i)"
+                      class="w-10 h-10 rounded-lg shadow-sm border-2 transition hover:scale-110"
+                      :style="`background-color: ${c.hex}; border-color: ${i === selectedExtracted ? baseHex : 'transparent'}`"
                       :title="c.hex">
               </button>
             </template>
@@ -171,7 +331,7 @@
 
     <!-- Footer -->
     <div class="text-center text-xs text-gray-400 dark:text-gray-600 pb-4">
-      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
   </div>
 
@@ -179,16 +339,13 @@
   <script src="js/colour-engine.js"></script>
 
   <!-- Service Worker Registration -->
-  <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch(() => {});
       });
     }
-  </script>
 
   <!-- Alpine.js App -->
-  <script>
     function colourPicker() {
       return {
         // State
@@ -490,7 +647,6 @@
         }
       };
     }
-  </script>
 
   
 
@@ -556,10 +712,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

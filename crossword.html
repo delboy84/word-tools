@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline.">
+  <meta name="keywords" content="free crossword solver, crossword helper, word finder, pattern search, missing letters, crossword puzzle, online crossword, free word tool">
+  <meta property="og:title" content="Crossword Solver — Thinker Toolbox">
+  <meta property="og:description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Crossword Solver — Thinker Toolbox">
+  <meta name="twitter:description" content="Free crossword solver — find words matching patterns using ? as wildcards. Works offline.">
+  <title>Crossword Solver — Thinker Toolbox</title>
+    tailwind.config = { darkMode: 'class' };
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="stylesheet" href="css/shared.css">
   <link rel="manifest" href="manifest.json">
@@ -75,10 +85,7 @@
 
   <script src="js/wordlist.js"></script>
   <script src="js/word-engine.js"></script>
-  <script>
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-  </script>
-  <script>
     function crossword() {
       return {
         darkMode: false,
@@ -161,7 +168,6 @@
         }
       };
     }
-  </script>
 
   
 
@@ -221,10 +227,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

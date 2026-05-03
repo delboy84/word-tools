@@ -1,7 +1,164 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-  <script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles with constraint propagation and backtracking. Get hints, validate entries, and copy solutions. Works offline.">
+  <meta name="keywords" content="free Sudoku solver, Sudoku puzzle solver, 9x9 Sudoku, 16x16 Sudoku, Sudoku hints, Sudoku validator, online Sudoku, free puzzle tool">
+  <meta property="og:title" content="Free Sudoku Solver — Thinker Toolbox">
+  <meta property="og:description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles. Works offline.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Sudoku Solver">
+  <meta name="twitter:description" content="Free Sudoku solver — instantly solve 4×4, 9×9, and 16×16 puzzles. Works offline.">
+  <title>Free Sudoku Solver — Thinker Toolbox</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {}
+      }
+    }
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    .sudoku-input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      font-weight: 600;
+      outline: none;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+    }
+    .sudoku-input:focus {
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 2px;
+    }
+    .dark .sudoku-input:focus {
+      background: rgba(96, 165, 250, 0.15);
+    }
+    @media (max-width: 480px) {
+      .grid-16 { font-size: 0.6rem; }
+      .grid-16 input { font-size: 0.6rem; }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="sudokuApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">🔢 Sudoku Solver</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Solve any puzzle instantly</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Grid Size Tabs -->
+    <div class="flex gap-2 mb-4">
+      <template x-for="size in [4, 9, 16]" :key="size">
+        <button @click="switchSize(size)" :class="gridSize === size ? 'bg-blue-600 text-white dark:bg-cyan-600 dark:text-white' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'" class="px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition" x-text="size + '×' + size"></button>
+      </template>
+    </div>
+
+    <!-- Grid -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-4 overflow-x-auto">
+      <div :style="'display: grid; grid-template-columns: repeat(' + gridSize + ', 1fr); gap: 0px;'" :class="gridSize === 16 ? 'max-w-[540px] mx-auto' : 'max-w-[400px] mx-auto'">
+        <template x-for="(row, r) in grid" :key="r">
+          <template x-for="(cell, c) in row" :key="c">
+            <div :class="getCellClasses(r, c)"
+                 :style="getCellStyle(r, c)"
+                 class="relative flex items-center justify-center"
+                 :style="'aspect-ratio: 1;'">
+              <input type="text"
+                     inputmode="numeric"
+                     :maxlength="gridSize >= 16 ? 2 : 1"
+                     :value="cell.value || ''"
+                     @input="onInput(r, c, $event)"
+                     @keydown="onKeyDown(r, c, $event)"
+                     @focus="selectedCell = [r, c]"
+                     :class="getCellInputClasses(r, c)"
+                     :style="getCellStyle(r, c)"
+                     class="sudoku-input"
+                     :aria-label="'Row ' + (r+1) + ' Column ' + (c+1)">
+            </div>
+          </template>
+        </template>
+      </div>
+    </div>
+
+    <!-- Validation message -->
+    <div x-show="validationMsg" x-transition class="mb-3 p-3 rounded-lg text-sm font-medium bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800" x-text="validationMsg"></div>
+
+    <!-- Button Row -->
+    <div class="flex flex-wrap gap-2 md:gap-3 mb-4">
+      <button @click="solve()" :disabled="solving" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-blue-600 hover:bg-blue-700 dark:bg-cyan-600 dark:hover:bg-cyan-700 text-white rounded-lg font-medium text-sm md:text-base transition disabled:opacity-50">
+        <span x-show="!solving">✓ Solve</span>
+        <span x-show="solving">Solving…</span>
+      </button>
+      <button @click="hint()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        💡 Hint
+      </button>
+      <button @click="clearGrid()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        ✕ Clear
+      </button>
+      <button @click="loadExample()" class="flex-1 min-w-[70px] py-2.5 md:py-3 px-3 md:px-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium text-sm md:text-base transition">
+        📋 Example
+      </button>
+    </div>
+
+    <!-- Solution Info -->
+    <div x-show="solutionInfo" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-4">
+      <div class="flex flex-wrap gap-4 md:gap-6 text-sm text-gray-600 dark:text-gray-400">
+        <div><span class="font-semibold text-gray-900 dark:text-gray-100">Steps:</span> <span x-text="solutionInfo?.steps ?? 0"></span></div>
+        <div><span class="font-semibold text-gray-900 dark:text-gray-100">Time:</span> <span x-text="solutionInfo?.time ?? '—'"></span></div>
+        <div x-show="solutionInfo?.solved"><span class="font-semibold text-green-600 dark:text-green-400">✓ Solved</span></div>
+        <div x-show="solutionInfo && !solutionInfo?.solved"><span class="font-semibold text-red-600 dark:text-red-400">✗ No solution</span></div>
+      </div>
+      <div x-show="solutionInfo?.solved" class="mt-3">
+        <button @click="copySolution()" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline font-medium">
+          📋 Copy solution
+        </button>
+        <span x-show="copied" class="text-xs text-green-600 dark:text-green-400 ml-2">Copied!</span>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← Back to Thinker Toolbox</a>
+    </div>
+  </div>
+
+    function sudokuApp() {
+      const EXAMPLES = {
+        4: [
+          [0,0,0,0],
+          [0,2,0,1],
+          [0,1,0,4],
+          [0,0,0,0]
+        ],
+        9: [
+          [5,3,0,0,7,0,0,0,0],
+          [6,0,0,1,9,5,0,0,0],
+          [0,9,8,0,0,0,0,6,0],
+          [8,0,0,0,6,0,0,0,3],
+          [4,0,0,8,0,3,0,0,1],
+          [7,0,0,0,2,0,0,0,6],
+          [0,6,0,0,0,0,2,8,0],
+          [0,0,0,4,1,9,0,0,5],
+          [0,0,0,0,8,0,0,7,9]
+        ],
+        16: null // Too complex for a good example, will generate one
+      };
 
       return {
         darkMode: false,
@@ -340,10 +497,9 @@
         }
       };
     }
-  </script>
 
     <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+      Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
     </div>
 
   
@@ -405,10 +561,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

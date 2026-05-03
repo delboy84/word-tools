@@ -1,7 +1,360 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-  <script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free UK date calculator — days between dates, age calculator, add/subtract business days & UK bank holidays with Scotland and Northern Ireland support.">
+  <meta name="keywords" content="free date calculator, days between dates calculator, age calculator, UK bank holidays 2025 2026, business days calculator, Scotland bank holidays, add subtract days, date difference, free online calculator">
+  <meta property="og:title" content="Date & Time Calculator — Thinker Toolbox">
+  <meta property="og:description" content="Free UK date calculator with bank holidays, age calculator & business day counting.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Date & Time Calculator — Thinker Toolbox">
+  <meta name="twitter:description" content="Free UK date calculator. Works offline.">
+  <title>Date & Time Calculator — Thinker Toolbox</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
+    }
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="dateApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">📅 Date & Time Calculator</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Days between dates, age & UK bank holidays</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'difference'" :class="tab === 'difference' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📊 Difference</button>
+      <button @click="tab = 'age'" :class="tab === 'age' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">🎂 Age</button>
+      <button @click="tab = 'addsubtract'" :class="tab === 'addsubtract' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">➕ Add/Subtract</button>
+      <button @click="tab = 'holidays'" :class="tab === 'holidays' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">🏛️ Holidays</button>
+    </div>
+
+    <!-- DATE DIFFERENCE TAB -->
+    <div x-show="tab === 'difference'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Start Date</label>
+        <input type="date" x-model="diffStartDate" @input="calcDifference()" class="w-full text-xl md:text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-cyan-400 pb-1">
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">End Date</label>
+        <input type="date" x-model="diffEndDate" @input="calcDifference()" class="w-full text-xl md:text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-cyan-400 pb-1">
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Business days only</label>
+          <button @click="diffBusinessDays = !diffBusinessDays; calcDifference()" :class="diffBusinessDays ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="diffBusinessDays ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+        <div x-show="diffBusinessDays" class="flex items-center justify-between">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Scotland bank holidays</label>
+          <button @click="diffScotland = !diffScotland; calcDifference()" :class="diffScotland ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="diffScotland ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+      </div>
+
+      <div x-show="diffResult.years !== null" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Date Difference</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xl md:text-2xl font-bold text-blue-600 dark:text-cyan-400" x-text="diffResult.years + ' years, ' + diffResult.months + ' months, ' + diffResult.days + ' days'"></div>
+          <div x-show="diffResult.negative" class="text-xs text-red-500 dark:text-red-400 mt-1">⚠️ End date is before start date</div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Days</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum(diffResult.totalDays)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Weeks</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum(diffResult.totalWeeks)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Months</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum(diffResult.totalMonths)"></div>
+          </div>
+          <div x-show="diffBusinessDays" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Business Days</div>
+            <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="fmtNum(diffResult.businessDays)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AGE CALCULATOR TAB -->
+    <div x-show="tab === 'age'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Date of Birth</label>
+        <input type="date" x-model="ageDob" @input="calcAge()" class="w-full text-xl md:text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-cyan-400 pb-1">
+      </div>
+
+      <div x-show="ageResult.years !== null" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Your Age</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4 mb-3">
+          <div class="text-xl md:text-2xl font-bold text-blue-600 dark:text-cyan-400" x-text="ageResult.years + ' years, ' + ageResult.months + ' months, ' + ageResult.days + ' days'"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Days Lived</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum(ageResult.totalDays)"></div>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Total Hours (approx)</div>
+            <div class="text-lg md:text-xl font-bold text-gray-900 dark:text-gray-100" x-text="fmtNum(ageResult.totalHours)"></div>
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Born on</div>
+          <div class="text-lg font-bold text-gray-900 dark:text-gray-100" x-text="ageResult.dayOfWeek"></div>
+        </div>
+        <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+          <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Next Birthday</div>
+          <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="ageResult.nextBirthday"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD/SUBTRACT DAYS TAB -->
+    <div x-show="tab === 'addsubtract'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Start Date</label>
+        <input type="date" x-model="addStartDate" @input="calcAddSubtract()" class="w-full text-xl md:text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-cyan-400 pb-1">
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Add / Subtract</label>
+          <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+            <button @click="addMode = 'add'; calcAddSubtract()" :class="addMode === 'add' ? 'bg-blue-600 dark:bg-cyan-600 text-white' : 'text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 text-xs font-medium transition">+ Add</button>
+            <button @click="addMode = 'subtract'; calcAddSubtract()" :class="addMode === 'subtract' ? 'bg-red-600 text-white' : 'text-gray-600 dark:text-gray-400'" class="px-3 py-1.5 text-xs font-medium transition">− Subtract</button>
+          </div>
+        </div>
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Number of Days</label>
+        <input type="number" x-model.number="addDays" @input="calcAddSubtract()" min="0" placeholder="30" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="numeric">
+      </div>
+
+      <!-- Quick buttons -->
+      <div class="flex flex-wrap gap-2 mb-3">
+        <button @click="addDays = 30; addMode = 'add'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">+30 days</button>
+        <button @click="addDays = 90; addMode = 'add'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">+90 days</button>
+        <button @click="addDays = 0; addMonths = 6; addMode = 'add'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">+6 months</button>
+        <button @click="addDays = 0; addYears = 1; addMode = 'add'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">+1 year</button>
+        <button @click="addDays = 30; addMode = 'subtract'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">−30 days</button>
+        <button @click="addDays = 90; addMode = 'subtract'; calcAddSubtract()" class="px-3 py-1.5 text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition">−90 days</button>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Business days only</label>
+          <button @click="addBusinessDays = !addBusinessDays; calcAddSubtract()" :class="addBusinessDays ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="addBusinessDays ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+        <div x-show="addBusinessDays" class="flex items-center justify-between">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Scotland bank holidays</label>
+          <button @click="addScotland = !addScotland; calcAddSubtract()" :class="addScotland ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="addScotland ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+      </div>
+
+      <div x-show="addResult !== null" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-6 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3 md:mb-4">Result Date</h2>
+        <div class="bg-blue-50 dark:bg-cyan-900/20 rounded-lg p-3 md:p-4">
+          <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-cyan-400" x-text="addResult"></div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1" x-text="addResultDay"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UK BANK HOLIDAYS TAB -->
+    <div x-show="tab === 'holidays'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Region</label>
+        <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+          <button @click="holRegion = 'england'; calcHolidays()" :class="holRegion === 'england' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 text-xs font-medium transition whitespace-nowrap">England & Wales</button>
+          <button @click="holRegion = 'scotland'; calcHolidays()" :class="holRegion === 'scotland' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 text-xs font-medium transition whitespace-nowrap">Scotland</button>
+          <button @click="holRegion = 'ni'; calcHolidays()" :class="holRegion === 'ni' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 text-xs font-medium transition whitespace-nowrap">N. Ireland</button>
+        </div>
+      </div>
+
+      <!-- Next upcoming holiday -->
+      <div x-show="nextHoliday" class="bg-green-50 dark:bg-green-900/20 rounded-xl shadow-sm border border-green-200 dark:border-green-800 p-3 md:p-4 mb-3">
+        <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">🔜 Next Bank Holiday</div>
+        <div class="text-lg md:text-xl font-bold text-green-600 dark:text-green-400" x-text="nextHoliday ? nextHoliday.name : ''"></div>
+        <div class="text-sm text-gray-700 dark:text-gray-300" x-text="nextHoliday ? nextHoliday.dateStr : ''"></div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1" x-text="nextHoliday ? nextHoliday.countdown : ''"></div>
+      </div>
+
+      <!-- Year selector -->
+      <div class="flex gap-1 mb-3 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+        <button @click="holYear = 2025; calcHolidays()" :class="holYear === 2025 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition">2025</button>
+        <button @click="holYear = 2026; calcHolidays()" :class="holYear === 2026 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition">2026</button>
+        <button @click="holYear = 2027; calcHolidays()" :class="holYear === 2027 ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition">2027</button>
+      </div>
+
+      <!-- Holiday list -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3" x-text="holYear + ' Bank Holidays'"></h2>
+        <div class="space-y-2">
+          <template x-for="hol in holidaysList" :key="hol.dateStr">
+            <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+              <div>
+                <div class="text-sm font-medium text-gray-900 dark:text-gray-100" x-text="hol.name"></div>
+                <div class="text-xs text-gray-500 dark:text-gray-400" x-text="hol.dateStr"></div>
+              </div>
+              <div class="text-right">
+                <div class="text-xs font-medium" :class="hol.daysUntil !== null && hol.daysUntil >= 0 ? (hol.daysUntil === 0 ? 'text-green-600 dark:text-green-400' : 'text-blue-600 dark:text-cyan-400') : 'text-gray-400 dark:text-gray-500'" x-text="hol.daysUntil !== null ? (hol.daysUntil === 0 ? 'Today!' : (hol.daysUntil > 0 ? hol.daysUntil + ' day' + (hol.daysUntil !== 1 ? 's' : '') : 'Passed')) : ''"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+    function dateApp() {
+      return {
+        darkMode: false,
+        tab: 'difference',
+
+        // Date Difference
+        diffStartDate: '',
+        diffEndDate: '',
+        diffBusinessDays: false,
+        diffScotland: false,
+        diffResult: { years: null, months: null, days: null, totalDays: null, totalWeeks: null, totalMonths: null, businessDays: null, negative: false },
+
+        // Age Calculator
+        ageDob: '',
+        ageResult: { years: null, months: null, days: null, totalDays: null, totalHours: null, dayOfWeek: '', nextBirthday: '' },
+
+        // Add/Subtract
+        addStartDate: '',
+        addDays: 30,
+        addMonths: 0,
+        addYears: 0,
+        addMode: 'add',
+        addBusinessDays: false,
+        addScotland: false,
+        addResult: null,
+        addResultDay: '',
+
+        // Bank Holidays
+        holRegion: 'england',
+        holYear: 2025,
+        holidaysList: [],
+        nextHoliday: null,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          // Set default dates
+          const today = new Date();
+          this.diffStartDate = this.toDateStr(today);
+          this.diffEndDate = this.toDateStr(today);
+          this.addStartDate = this.toDateStr(today);
+          this.calcDifference();
+          this.calcAddSubtract();
+          this.calcHolidays();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        toDateStr(d) {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        },
+
+        fmtNum(n) {
+          if (n === null || n === undefined || isNaN(n)) return '0';
+          return Number(n).toLocaleString('en-GB');
+        },
+
+        // === UK Bank Holiday Data ===
+        getHolidaysForRegion(year, region) {
+          // All holidays for all regions
+          const allHolidays = {
+            2025: [
+              { date: '2025-01-01', name: "New Year's Day", regions: ['england', 'scotland', 'ni'] },
+              { date: '2025-01-02', name: '2nd January (Hogmanay)', regions: ['scotland'] },
+              { date: '2025-04-18', name: 'Good Friday', regions: ['scotland'] },
+              { date: '2025-04-21', name: 'Easter Monday', regions: ['england', 'ni'] },
+              { date: '2025-05-05', name: 'Early May Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2025-05-26', name: 'Spring Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2025-08-11', name: 'Summer Bank Holiday', regions: ['scotland'] },
+              { date: '2025-08-25', name: 'Summer Bank Holiday', regions: ['england', 'ni'] },
+              { date: '2025-12-01', name: "St Andrew's Day", regions: ['scotland'] },
+              { date: '2025-12-25', name: 'Christmas Day', regions: ['england', 'scotland', 'ni'] },
+              { date: '2025-12-26', name: 'Boxing Day', regions: ['england', 'ni'] },
+            ],
+            2026: [
+              { date: '2026-01-01', name: "New Year's Day", regions: ['england', 'scotland', 'ni'] },
+              { date: '2026-01-02', name: '2nd January (Hogmanay)', regions: ['scotland'] },
+              { date: '2026-04-03', name: 'Good Friday', regions: ['scotland'] },
+              { date: '2026-04-06', name: 'Easter Monday', regions: ['england', 'ni'] },
+              { date: '2026-05-04', name: 'Early May Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2026-05-25', name: 'Spring Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2026-08-03', name: 'Summer Bank Holiday', regions: ['scotland'] },
+              { date: '2026-08-31', name: 'Summer Bank Holiday', regions: ['england', 'ni'] },
+              { date: '2026-11-30', name: "St Andrew's Day", regions: ['scotland'] },
+              { date: '2026-12-25', name: 'Christmas Day', regions: ['england', 'scotland', 'ni'] },
+              { date: '2026-12-28', name: 'Boxing Day (substitute)', regions: ['england', 'ni'] },
+            ],
+            2027: [
+              { date: '2027-01-01', name: "New Year's Day", regions: ['england', 'scotland', 'ni'] },
+              { date: '2027-01-02', name: '2nd January (Hogmanay)', regions: ['scotland'] },
+              { date: '2027-03-26', name: 'Good Friday', regions: ['scotland'] },
+              { date: '2027-03-29', name: 'Easter Monday', regions: ['england', 'ni'] },
+              { date: '2027-05-03', name: 'Early May Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2027-05-31', name: 'Spring Bank Holiday', regions: ['england', 'scotland', 'ni'] },
+              { date: '2027-08-02', name: 'Summer Bank Holiday', regions: ['scotland'] },
+              { date: '2027-08-30', name: 'Summer Bank Holiday', regions: ['england', 'ni'] },
+              { date: '2027-11-30', name: "St Andrew's Day", regions: ['scotland'] },
+              { date: '2027-12-27', name: 'Christmas Day (substitute)', regions: ['england', 'scotland', 'ni'] },
+              { date: '2027-12-28', name: 'Boxing Day (substitute)', regions: ['england', 'scotland', 'ni'] },
+            ]
+          };
           return (allHolidays[year] || []).filter(h => h.regions.includes(region));
         },
 
@@ -238,10 +591,9 @@
         }
       };
     }
-  </script>
 
   <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
   </div>
 
   
@@ -307,10 +659,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

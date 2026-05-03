@@ -1,12 +1,557 @@
 <!DOCTYPE html>
 <html lang="en" class="">
 <head>
-  <script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Free Octopus Energy tariff comparison for solar panel and battery owners. Compare Agile, Flux, Outgoing and Fixed tariffs. Find the best tariff for your setup.">
+  <meta name="keywords" content="free Octopus tariff comparison, Octopus Agile solar, Octopus Flux solar battery, Octopus Outgoing tariff, best energy tariff solar panels UK, solar tariff calculator, free online calculator">
+  <meta property="og:title" content="Free Octopus Tariff Comparison for Solar & Battery — Thinker Toolbox">
+  <meta property="og:description" content="Free Octopus Energy tariff comparison for solar panel and battery owners. Compare Agile, Flux, Outgoing and Fixed tariffs. Find the best tariff for your setup.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Free Octopus Tariff Comparison for Solar & Battery — Thinker Toolbox">
+  <meta name="twitter:description" content="Free Octopus Energy tariff comparison for solar panel and battery owners. Compare Agile, Flux, Outgoing and Fixed tariffs.">
+  <title>Free Octopus Tariff Comparison for Solar & Battery — Thinker Toolbox</title>
+  <meta name="theme-color" content="#3b82f6">
+  <link rel="manifest" href="manifest.json">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: { extend: {} }
     }
-  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+    .bar-chart-bar { transition: width 0.4s ease; min-width: 2px; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200" x-data="octopusApp()" x-init="init()" x-cloak>
+
+  <div class="px-3 py-4 md:px-4 md:py-6 md:max-w-2xl md:mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-4 md:mb-6">
+      <div>
+        <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+        <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">🐙 Octopus Tariff Comparison</h1>
+        <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-0.5">Find the best tariff for solar & battery</p>
+      </div>
+      <button @click="toggleDark()" class="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition" :title="darkMode ? 'Switch to light mode' : 'Switch to dark mode'">
+        <span x-show="darkMode" class="text-xl">☀️</span>
+        <span x-show="!darkMode" class="text-xl">🌙</span>
+      </button>
+    </div>
+
+    <!-- Tab Selector -->
+    <div class="flex gap-1 mb-4 bg-gray-200 dark:bg-gray-700 rounded-lg p-1 overflow-x-auto">
+      <button @click="tab = 'comparison'" :class="tab === 'comparison' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">⚖️ Tariff Comparison</button>
+      <button @click="tab = 'import'" :class="tab === 'import' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📥 Import Costs</button>
+      <button @click="tab = 'export'" :class="tab === 'export' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-sm' : 'text-gray-600 dark:text-gray-400'" class="flex-1 py-2 px-2 rounded-md text-xs md:text-sm font-medium transition whitespace-nowrap">📤 Export Earnings</button>
+    </div>
+
+    <!-- TARIFF COMPARISON TAB -->
+    <div x-show="tab === 'comparison'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Electricity Usage</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="annualUsage" @input="calc()" step="100" min="0" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal" placeholder="3500">
+          <span class="text-sm text-gray-400">kWh</span>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Annual Solar Generation</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="annualSolar" @input="calc()" step="100" min="0" class="w-full text-2xl md:text-3xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none placeholder-gray-300 dark:placeholder-gray-600" inputmode="decimal" placeholder="3800">
+          <span class="text-sm text-gray-400">kWh</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+          <a href="solar-calculator.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Calculate your generation →</a>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400">Battery Storage</label>
+          <button @click="hasBattery = !hasBattery; calc()" :class="hasBattery ? 'bg-blue-600 dark:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-600'" class="relative w-11 h-6 rounded-full transition-colors">
+            <span :class="hasBattery ? 'translate-x-5' : 'translate-x-0'" class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform"></span>
+          </button>
+        </div>
+        <div x-show="hasBattery" x-transition>
+          <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Battery Capacity (kWh)</label>
+          <div class="flex items-center gap-1">
+            <input type="number" x-model.number="batteryCap" @input="calc()" step="0.5" min="0" class="w-full text-xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="5">
+            <span class="text-sm text-gray-400">kWh</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3">
+        <label class="block text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1.5">Self-Consumption Ratio</label>
+        <div class="flex items-center gap-1">
+          <input type="number" x-model.number="selfConsumption" @input="calc()" step="5" min="0" max="100" class="w-full text-2xl font-bold bg-transparent text-gray-900 dark:text-gray-100 outline-none" inputmode="decimal" placeholder="40">
+          <span class="text-sm text-gray-400">%</span>
+        </div>
+        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">Typical: 40% without battery, 80% with battery</div>
+      </div>
+
+      <!-- Results Table -->
+      <div x-show="annualUsage > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Annual Cost by Tariff</h2>
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Tariff</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Import</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Export</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Net Bill</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="t in tariffs" :key="t.name">
+                <tr class="border-b border-gray-100 dark:border-gray-700" :class="t.best ? 'bg-green-50 dark:bg-green-900/10' : ''">
+                  <td class="py-2 text-gray-900 dark:text-gray-100 font-medium" x-text="t.name + (t.best ? ' ⭐' : '')"></td>
+                  <td class="py-2 text-right text-red-500 dark:text-red-400" x-text="'£' + fmtNum(t.importCost)"></td>
+                  <td class="py-2 text-right text-green-600 dark:text-green-400" x-text="'£' + fmtNum(t.exportEarnings)"></td>
+                  <td class="py-2 text-right font-bold" :class="t.best ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100'" x-text="'£' + fmtNum(t.netBill)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+        <div x-show="bestTariff" class="mt-3 text-xs bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          🟢 <span x-text="bestTariff"></span> gives you the lowest net annual bill at <strong class="text-green-600 dark:text-green-400" x-text="'£' + fmtNum(bestNetBill)"></strong>.
+        </div>
+      </div>
+
+      <!-- Visual comparison -->
+      <div x-show="annualUsage > 0" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Net Bill Comparison</h2>
+        <div class="space-y-1.5">
+          <template x-for="t in tariffs" :key="t.name">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-28 text-right shrink-0 truncate" x-text="t.name"></span>
+              <div class="flex-1 bg-gray-100 dark:bg-gray-700 rounded-full h-5 overflow-hidden">
+                <div class="bar-chart-bar h-full rounded-full" :class="t.best ? 'bg-green-500 dark:bg-green-400' : 'bg-blue-500 dark:bg-cyan-500'" :style="'width:' + t.barPct + '%'"></div>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-16 text-right shrink-0" x-text="'£' + fmtNum0(t.netBill)"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Export PDF -->
+      <div x-show="annualUsage > 0" class="mb-3 md:mb-4">
+        <button @click="exportPDF()" :disabled="pdfLoading" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <span x-show="!pdfLoading">📄 Export PDF</span>
+          <span x-show="pdfLoading">Generating...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- IMPORT COSTS TAB -->
+    <div x-show="tab === 'import'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Import Cost Breakdown</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">How much you spend on importing electricity, after solar offsets your usage.</p>
+
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Tariff</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Rate</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Import kWh</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="t in importDetails" :key="t.name">
+                <tr class="border-b border-gray-100 dark:border-gray-700">
+                  <td class="py-2 text-gray-900 dark:text-gray-100 font-medium" x-text="t.name"></td>
+                  <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="t.rate"></td>
+                  <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="fmtNum0(t.importKwh)"></td>
+                  <td class="py-2 text-right text-red-500 dark:text-red-400 font-medium" x-text="'£' + fmtNum(t.cost)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">How Solar Reduces Your Bill</h2>
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">Without Solar</div>
+            <div class="text-lg font-bold text-red-500 dark:text-red-400" x-text="'£' + fmtNum(billWithoutSolar)"></div>
+          </div>
+          <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-0.5">With Solar</div>
+            <div class="text-lg font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(billWithSolar)"></div>
+          </div>
+        </div>
+        <div class="text-xs bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-gray-700 dark:text-gray-300">
+          💡 Solar saves you <strong class="text-green-600 dark:text-green-400" x-text="'£' + fmtNum(solarImportSaving)"></strong>/yr on import costs.
+        </div>
+      </div>
+
+      <div x-show="hasBattery" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">🔋 Smart Charging Strategy</h2>
+        <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <p><strong class="text-gray-900 dark:text-gray-100">Octopus Flux:</strong> Charge your battery during cheap night hours (9p/kWh, typically 2am–5am). Use stored energy during the day instead of importing at 24p/kWh. Saves ~15p/kWh on every kWh you shift.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Octopus Agile:</strong> Charge during the cheapest hours (often 5–10p/kWh between 2am–5am). On some days prices go negative! Avoid peak hours (4pm–7pm) where rates can exceed 40p/kWh.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Estimated annual saving from smart charging:</strong> <span class="font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(smartChargingSaving)"></span></p>
+        </div>
+        <div class="mt-2 text-xs bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-gray-600 dark:text-gray-400">
+          ⚠️ Smart charging savings depend on your battery size, usage pattern and how consistently you charge during off-peak hours. These are estimates.
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT EARNINGS TAB -->
+    <div x-show="tab === 'export'" x-transition>
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Export Earnings by Tariff</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">How much you earn from exporting solar to the grid.</p>
+
+        <div class="overflow-x-auto -mx-3 px-3">
+          <table class="w-full text-xs md:text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-600">
+                <th class="py-2 text-left text-gray-500 dark:text-gray-400 font-medium">Tariff</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Export Rate</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Export kWh</th>
+                <th class="py-2 text-right text-gray-500 dark:text-gray-400 font-medium">Earnings</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="t in exportDetails" :key="t.name">
+                <tr class="border-b border-gray-100 dark:border-gray-700">
+                  <td class="py-2 text-gray-900 dark:text-gray-100 font-medium" x-text="t.name"></td>
+                  <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="t.rate"></td>
+                  <td class="py-2 text-right text-gray-900 dark:text-gray-100" x-text="fmtNum0(t.exportKwh)"></td>
+                  <td class="py-2 text-right text-green-600 dark:text-green-400 font-medium" x-text="'£' + fmtNum(t.earnings)"></td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div x-show="!hasBattery" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Without Battery</h2>
+        <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <p>Without a battery, your export is straightforward — whatever solar you don't use goes straight to the grid at your SEG/Outgoing rate.</p>
+          <p>With <strong class="text-gray-900 dark:text-gray-100">Octopus Outgoing (15p/kWh)</strong>, you earn <strong class="text-green-600 dark:text-green-400" x-text="'£' + fmtNum(exportedKwh * 0.15)"></strong> per year from <span x-text="fmtNum0(exportedKwh)"></span> kWh exported.</p>
+          <p>💡 Adding a battery could increase your self-consumption from ~40% to ~80%, reducing your export but increasing total savings (you save more by using your own electricity at 24.5p than exporting at 15p).</p>
+        </div>
+      </div>
+
+      <div x-show="hasBattery" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-3 md:p-4 mb-3 md:mb-4">
+        <h2 class="text-sm md:text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">🔋 Battery Export Strategy</h2>
+        <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 space-y-2">
+          <p><strong class="text-gray-900 dark:text-gray-100">Octopus Agile:</strong> With a battery, you can store solar during the day and export during peak hours (4pm–7pm) when Agile export rates can be highest. Some Agile export rates exceed 30p/kWh during peak demand.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Octopus Flux:</strong> Flux pays 15p/kWh export regardless of time. Export during the day from solar surplus. Charge battery at night at 9p/kWh — the spread (15p export − 9p charge = 6p/kWh) provides arbitrage profit.</p>
+          <p><strong class="text-gray-900 dark:text-gray-100">Potential Agile peak export earnings:</strong> <span class="font-bold text-green-600 dark:text-green-400" x-text="'£' + fmtNum(agilePeakExport)"></span>/yr (if you shift 30% of export to peak hours)</p>
+        </div>
+        <div class="mt-2 text-xs bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-2 text-gray-600 dark:text-gray-400">
+          ⚠️ Agile export rates vary every half-hour. Peak rates are not guaranteed and depend on wholesale prices. The estimate above assumes average peak export rate of 25p/kWh.
+        </div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="text-xs text-gray-400 dark:text-gray-600 mt-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+      ⚠️ For illustration only, not financial advice. Tariff rates are approximate and change regularly. Check <a href="https://octopus.energy" class="text-blue-600 dark:text-cyan-400 hover:underline">octopus.energy</a> for current rates. Standing charges not included — typically ~£0.50/day (£182/yr) for all tariffs.
+    </div>
+
+    <!-- Back Link -->
+    <div class="mt-4">
+      <a href="index.html" class="text-xs md:text-sm text-blue-600 dark:text-cyan-400 hover:underline">← All tools</a>
+    </div>
+  </div>
+
+    function octopusApp() {
+      return {
+        darkMode: false,
+        tab: 'comparison',
+        annualUsage: null,
+        annualSolar: null,
+        selfConsumption: 40,
+        hasBattery: false,
+        batteryCap: 5,
+        pdfLoading: false,
+        tariffs: [],
+        bestTariff: '',
+        bestNetBill: 0,
+        importDetails: [],
+        exportDetails: [],
+        billWithoutSolar: 0,
+        billWithSolar: 0,
+        solarImportSaving: 0,
+        smartChargingSaving: 0,
+        exportedKwh: 0,
+        agilePeakExport: 0,
+
+        init() {
+          const saved = localStorage.getItem('darkMode');
+          if (saved === 'true' || (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            this.darkMode = true;
+            document.documentElement.classList.add('dark');
+          }
+          this.calc();
+        },
+
+        toggleDark() {
+          this.darkMode = !this.darkMode;
+          localStorage.setItem('darkMode', this.darkMode);
+          document.documentElement.classList.toggle('dark', this.darkMode);
+        },
+
+        fmtNum(n) { if (n == null || isNaN(n)) return '0.00'; return Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+        fmtNum0(n) { if (n == null || isNaN(n)) return '0'; return Math.round(Number(n)).toLocaleString('en-GB'); },
+
+        calc() {
+          const usage = parseFloat(this.annualUsage) || 0;
+          const solar = parseFloat(this.annualSolar) || 0;
+          const sc = parseFloat(this.selfConsumption) / 100;
+
+          const selfConsumedKwh = solar * sc;
+          this.exportedKwh = solar * (1 - sc);
+          const importNeeded = Math.max(0, usage - selfConsumedKwh);
+
+          // Bill without solar (Flexible rate)
+          this.billWithoutSolar = usage * 0.245;
+          this.billWithSolar = importNeeded * 0.245;
+          this.solarImportSaving = this.billWithoutSolar - this.billWithSolar;
+
+          // Tariff definitions
+          const tariffDefs = [
+            {
+              name: 'Flexible Octopus',
+              importRate: 24.5, // p/kWh
+              exportRate: 0, // No export payment on flexible
+              importRateLabel: '24.5p',
+              exportRateLabel: 'None',
+              // Special handling for Agile/Flux below
+              type: 'simple'
+            },
+            {
+              name: 'Octopus Fixed',
+              importRate: 23,
+              exportRate: 15, // Outgoing add-on
+              importRateLabel: '23p',
+              exportRateLabel: '15p (Outgoing)',
+              type: 'simple'
+            },
+            {
+              name: 'Octopus Flux',
+              // Day rate ~24p (16hrs), night rate 9p (8hrs). Weighted: (24*0.667 + 9*0.333) = ~19p avg for non-battery
+              // With battery: charge at night 9p, so effective import is much lower
+              importRate: this.hasBattery ? null : 19,
+              exportRate: 15,
+              importRateLabel: '24p day / 9p night',
+              exportRateLabel: '15p',
+              type: 'flux'
+            },
+            {
+              name: 'Octopus Agile',
+              // Average ~24p, but with battery can charge at ~8p average during cheap hours
+              importRate: this.hasBattery ? null : 24,
+              exportRate: 15,
+              importRateLabel: this.hasBattery ? '~12p avg (smart charge)' : '~24p avg',
+              exportRateLabel: '15p (Outgoing)',
+              type: 'agile'
+            },
+            {
+              name: 'Agile + Outgoing',
+              importRate: null,
+              exportRate: 15,
+              importRateLabel: this.hasBattery ? '~12p (smart charge)' : '~24p avg',
+              exportRateLabel: '15p',
+              type: 'agile_outgoing'
+            }
+          ];
+
+          let results = [];
+          let minNet = Infinity;
+          let bestName = '';
+
+          tariffDefs.forEach(t => {
+            let importCost = 0;
+            let exportEarnings = 0;
+            let effectiveImportRate = 0;
+
+            if (t.type === 'flux') {
+              if (this.hasBattery) {
+                // With battery: charge at 9p during night, use stored energy during day
+                // Assume battery covers ~30% of daily import needs via night charging
+                const nightFraction = 0.4; // 40% of import at night rate
+                const dayFraction = 0.6;
+                effectiveImportRate = (nightFraction * 9 + dayFraction * 24);
+                importCost = importNeeded * effectiveImportRate / 100;
+              } else {
+                effectiveImportRate = 19; // blended rate
+                importCost = importNeeded * effectiveImportRate / 100;
+              }
+              exportEarnings = this.exportedKwh * t.exportRate / 100;
+            } else if (t.type === 'agile' || t.type === 'agile_outgoing') {
+              if (this.hasBattery) {
+                // With battery: charge at cheap hours avg ~8p, covers ~50% of import
+                const cheapFraction = 0.5;
+                const normalFraction = 0.5;
+                effectiveImportRate = (cheapFraction * 8 + normalFraction * 24);
+                importCost = importNeeded * effectiveImportRate / 100;
+              } else {
+                effectiveImportRate = 24;
+                importCost = importNeeded * effectiveImportRate / 100;
+              }
+              exportEarnings = this.exportedKwh * (t.exportRate || 15) / 100;
+            } else {
+              effectiveImportRate = t.importRate;
+              importCost = importNeeded * (t.importRate / 100);
+              exportEarnings = this.exportedKwh * (t.exportRate / 100);
+            }
+
+            const netBill = importCost - exportEarnings;
+
+            results.push({
+              name: t.name,
+              importCost,
+              exportEarnings,
+              netBill: Math.max(0, netBill),
+              best: false,
+              barPct: 0,
+              rate: t.importRateLabel,
+              exportRateLabel: t.exportRateLabel
+            });
+
+            if (netBill < minNet) {
+              minNet = netBill;
+              bestName = t.name;
+            }
+          });
+
+          // Mark best and calculate bar percentages
+          const maxBill = Math.max(...results.map(r => r.netBill), 1);
+          results.forEach(r => {
+            r.best = r.name === bestName;
+            r.barPct = (r.netBill / maxBill * 100);
+          });
+
+          this.tariffs = results;
+          this.bestTariff = bestName;
+          this.bestNetBill = Math.max(0, minNet);
+
+          // Import details
+          this.importDetails = results.map(r => ({
+            name: r.name,
+            rate: r.rate,
+            importKwh: importNeeded,
+            cost: r.importCost
+          }));
+
+          // Export details
+          this.exportDetails = results.map(r => ({
+            name: r.name,
+            rate: r.exportRateLabel,
+            exportKwh: this.exportedKwh,
+            earnings: r.exportEarnings
+          }));
+
+          // Smart charging saving estimate
+          if (this.hasBattery) {
+            const batCap = parseFloat(this.batteryCap) || 5;
+            // Assume 365 cycles at ~80% depth of discharge
+            const annualCycled = batCap * 0.8 * 365;
+            // Saving: difference between day rate and night rate for Flux
+            this.smartChargingSaving = annualCycled * (24 - 9) / 100;
+          } else {
+            this.smartChargingSaving = 0;
+          }
+
+          // Agile peak export
+          this.agilePeakExport = this.exportedKwh * 0.3 * 0.25 + this.exportedKwh * 0.7 * 0.15;
+        },
+
+        async exportPDF() {
+          if (!this.annualUsage) { alert('Enter your usage details first.'); return; }
+          this.pdfLoading = true;
+          try {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js';
+            await new Promise((resolve, reject) => { script.onload = resolve; script.onerror = reject; document.head.appendChild(script); });
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const pageW = doc.internal.pageSize.getWidth();
+            const pageH = doc.internal.pageSize.getHeight();
+            const m = 10;
+            let y = m;
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+            function addFooter() {
+              doc.setFontSize(7); doc.setFont('helvetica', 'italic'); doc.setTextColor(150);
+              doc.text('Generated by Thinker Toolbox — For illustration only, not financial advice', pageW / 2, pageH - 5, { align: 'center' });
+            }
+            function checkPage(needed) { if (y + needed > pageH - 15) { addFooter(); doc.addPage(); y = m; } }
+
+            doc.setFontSize(16); doc.setFont('helvetica', 'bold'); doc.setTextColor(30, 64, 175);
+            doc.text('Thinker Toolbox \u2014 Octopus Tariff Report', m, y + 5); y += 10;
+            doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(100);
+            doc.text('Generated: ' + dateStr, m, y); y += 6;
+            doc.setDrawColor(200); doc.line(m, y, pageW - m, y); y += 6;
+
+            doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
+            doc.text('Input Details', m, y); y += 6;
+            doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(50);
+            const inputs = [
+              ['Annual Usage', this.fmtNum0(this.annualUsage) + ' kWh'],
+              ['Annual Solar', this.fmtNum0(this.annualSolar) + ' kWh'],
+              ['Self-Consumption', this.selfConsumption + '%'],
+              ['Battery', this.hasBattery ? this.batteryCap + ' kWh' : 'No']
+            ];
+            inputs.forEach(([label, val]) => {
+              doc.setFont('helvetica', 'bold'); doc.text(label + ':', m, y);
+              doc.setFont('helvetica', 'normal'); doc.text(val, m + 55, y); y += 5;
+            }); y += 4;
+
+            checkPage(30);
+            doc.setFontSize(12); doc.setFont('helvetica', 'bold'); doc.setTextColor(30);
+            doc.text('Tariff Comparison', m, y); y += 7;
+            doc.setFillColor(30, 64, 175); doc.rect(m, y - 3, pageW - 2 * m, 6, 'F');
+            doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
+            doc.text('Tariff', m + 1, y + 1); doc.text('Import Cost', m + 50, y + 1);
+            doc.text('Export Earn', m + 85, y + 1); doc.text('Net Bill', m + 120, y + 1); y += 5;
+            doc.setTextColor(50); doc.setFont('helvetica', 'normal');
+            this.tariffs.forEach((t, i) => {
+              checkPage(8);
+              if (i % 2 === 0) { doc.setFillColor(240, 240, 240); doc.rect(m, y - 3, pageW - 2 * m, 5, 'F'); }
+              doc.text(t.name + (t.best ? ' ⭐' : ''), m + 1, y + 1);
+              doc.text('\u00a3' + this.fmtNum(t.importCost), m + 50, y + 1);
+              doc.text('\u00a3' + this.fmtNum(t.exportEarnings), m + 85, y + 1);
+              doc.text('\u00a3' + this.fmtNum(t.netBill), m + 120, y + 1); y += 5;
+            });
+
+            addFooter();
+            doc.save('thinker-toolbox-octopus-tariff-report.pdf');
+          } catch (err) {
+            alert('Failed to generate PDF. Please check your internet connection.');
+          } finally {
+            this.pdfLoading = false;
+          }
+        }
+      };
+    }
 
   <div class="text-center text-xs text-gray-400 dark:text-gray-600 mt-6">
-    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a> · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
+    Works offline · Built with ♥ · <a href="about.html" class="text-blue-600 dark:text-cyan-400 hover:underline">About</a> · <a href="privacy-policy.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Privacy</a> · <a href="terms-of-service.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Terms</a> · <a href="contact.html" class="text-blue-600 dark:text-cyan-400 hover:underline">Contact</a>
   </div>
 
   
@@ -73,10 +618,14 @@
   <div x-data="{ showBanner: !localStorage.getItem('cookieConsent') }" x-show="showBanner" x-transition
        class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-50 p-4 md:p-6">
     <div class="max-w-2xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-3">
-      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 We use Google AdSense which may set cookies for personalised ads. You can accept or reject personalised advertising.</p>
+      <p class="text-sm text-gray-700 dark:text-gray-300 flex-1">🍪 This site may use cookies for analytics. You can accept or reject personalised advertising.</p>
       <div class="flex gap-2 shrink-0">
-    }
-  })();
-  </script>
+        <button @click="localStorage.setItem('cookieConsent', 'accepted'); showBanner = false"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">Accept</button>
+        <button @click="localStorage.setItem('cookieConsent', 'rejected'); showBanner = false"
+                class="px-4 py-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 text-sm font-medium rounded-lg transition">Reject</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
